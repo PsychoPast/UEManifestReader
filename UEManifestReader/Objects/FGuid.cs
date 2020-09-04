@@ -6,7 +6,7 @@
 
     internal ref struct FGuid
     {
-        public FGuid(Stream stream)
+        internal FGuid(Stream stream)
         {
             A = SwapBytesOrder(stream.ReadBytes(4));
             B = SwapBytesOrder(stream.ReadBytes(4));
@@ -14,13 +14,13 @@
             D = SwapBytesOrder(stream.ReadBytes(4));
         }
 
-        public ArraySegment<byte> A { get; private set; }
+        internal ArraySegment<byte> A { get; private set; }
 
-        public ArraySegment<byte> B { get; private set; }
+        internal ArraySegment<byte> B { get; private set; }
 
-        public ArraySegment<byte> C { get; private set; }
+        internal ArraySegment<byte> C { get; private set; }
 
-        public ArraySegment<byte> D { get; private set; }
+        internal ArraySegment<byte> D { get; private set; }
 
         public override string ToString() => $"{BytesToHexadecimalString(A)}{BytesToHexadecimalString(B)}{BytesToHexadecimalString(C)}{BytesToHexadecimalString(D)}";
     }
