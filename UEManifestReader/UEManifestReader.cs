@@ -530,7 +530,7 @@
             List<FChunkInfo> chunkInfos = new(elementCount);
             for (int i = 0; i < elementCount; i++)
             {
-                chunkInfos.Add(new FChunkInfo(guids?[i], hashes?[i], shaHashes?[i], groupNumbers?[i], windowSizes[i], filesSize?[i]));
+                chunkInfos.Add(new FChunkInfo(guids?[i], hashes?[i], shaHashes?[i], groupNumbers?[i], windowSizes?[i], filesSize?[i]));
             }
 
             Manifest.ChunkList = chunkInfos;
