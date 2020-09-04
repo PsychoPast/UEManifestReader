@@ -14,13 +14,13 @@
             D = SwapBytesOrder(stream.ReadBytes(4));
         }
 
-        internal ArraySegment<byte> A { get; private set; }
+        private readonly ArraySegment<byte> A;
 
-        internal ArraySegment<byte> B { get; private set; }
+        private readonly ArraySegment<byte> B;
 
-        internal ArraySegment<byte> C { get; private set; }
+        private readonly ArraySegment<byte> C;
 
-        internal ArraySegment<byte> D { get; private set; }
+        private readonly ArraySegment<byte> D;
 
         public override string ToString() => $"{BytesToHexadecimalString(A)}{BytesToHexadecimalString(B)}{BytesToHexadecimalString(C)}{BytesToHexadecimalString(D)}";
     }
