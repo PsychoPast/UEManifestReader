@@ -92,6 +92,11 @@
 
         internal static T[] ReadArray<T>(this Stream _, int count, Func<T> readAs)
         {
+            if(count == 0)
+            {
+                return Array.Empty<T>();
+            }
+
             T[] buffer = new T[count];
             for (int i = 0; i < count; i++)
             {
