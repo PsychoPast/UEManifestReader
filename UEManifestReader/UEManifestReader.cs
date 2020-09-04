@@ -479,10 +479,10 @@
                 reader.Position += elementCount; // * sizeof(byte)  // group numbers are stored as byte (1 byte) in the manifests but they are converted to string during parsing process in order for them to be usable
             }
 
-            uint? windowSize = null;
+            uint?[] windowSizes = null;
             if (_readerSettings.ShouldReadChunksWindowSize)
             {
-                windowSize = 1048576; // this value seems to be a const for now
+                windowSizes = reader.ReadArray(elementCount, () => (uint?)reader.ReadUInt());
 
                 if (!jsonSimplified)
                 {
@@ -491,24 +491,18 @@
                         jsonWriter.WriteStartObject("ChunksWindowSizeList");
                         for (int i = 0; i < elementCount; i++)
                         {
-                            jsonWriter.WriteNumber(guids[i], (uint)windowSize);
+                            jsonWriter.WriteNumber(guids[i], (uint)windowSizes[i]);
                         }
 
                         jsonWriter.WriteEndObject();
                     });
                 }
             }
-
-            /*uint?[] windowSize = null;
-            if(_readerSettings.ShouldReadChunksWindowSize) It seems windowSize is a const = 1048576
-            {
-                windowSize = reader.ReadArray(elementCount, () => (uint?)reader.ReadUInt());
-            }
             else
-            {*/
-            reader.Position += elementCount * sizeof(uint); // we don't need to read window sizes anymore so we skip them
+            {
+                reader.Position += elementCount * sizeof(uint); 
+            }
 
-            // }
             long?[] filesSize = null;
             if (_readerSettings.ShouldReadChunksDownloadSize)
             {
@@ -536,7 +530,7 @@
             List<FChunkInfo> chunkInfos = new(elementCount);
             for (int i = 0; i < elementCount; i++)
             {
-                chunkInfos.Add(new FChunkInfo(guids?[i], hashes?[i], shaHashes?[i], groupNumbers?[i], windowSize, filesSize?[i]));
+                chunkInfos.Add(new FChunkInfo(guids?[i], hashes?[i], shaHashes?[i], groupNumbers?[i], windowSizes[i], filesSize?[i]));
             }
 
             Manifest.ChunkList = chunkInfos;
