@@ -1,24 +1,24 @@
-﻿namespace UEManifestReader.Objects
-{
-    using System;
-    using System.IO;
+﻿using System;
+using System.IO;
 
+namespace UEManifestReader.Objects
+{
     public readonly struct FChunkPart : IEquatable<FChunkPart>
     {
         /// <summary>
         /// The GUID of the chunk containing this part.
         /// </summary>
-        public readonly string Guid;
+        public string Guid { get; }
 
         /// <summary>
         /// The offset of the first byte into the chunk.
         /// </summary>
-        public readonly uint Offset;
+        public uint Offset { get; }
 
         /// <summary>
         /// The size of this part.
         /// </summary>
-        public readonly uint Size;
+        public uint Size { get; }
 
         public FChunkPart(Stream reader)
         {

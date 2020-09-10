@@ -1,7 +1,7 @@
-﻿namespace UEManifestReader.Enums
-{
-    using System;
+﻿using System;
 
+namespace UEManifestReader.Enums
+{
     [Flags]
     internal enum EManifestStorageFlags : byte
     {

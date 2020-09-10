@@ -1,27 +1,27 @@
-﻿namespace UEManifestReader
-{
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Net;
-    using System.Security.Cryptography;
-    using System.Text.Encodings.Web;
-    using System.Text.Json;
-    using System.Threading.Tasks;
-    using global::UEManifestReader.Enums;
-    using global::UEManifestReader.Exceptions;
-    using global::UEManifestReader.Objects;
-    using Ionic.Zlib;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net;
+using System.Security.Cryptography;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Threading.Tasks;
+using global::UEManifestReader.Enums;
+using global::UEManifestReader.Exceptions;
+using global::UEManifestReader.Objects;
+using Ionic.Zlib;
 
+namespace UEManifestReader
+{
     public sealed class UEManifestReader : IDisposable
     {
         private const uint ManifestHeaderMagic = 0x44BEC00C;
         private readonly CustomManifestReadingSettings _readerSettings;
-        private readonly Utf8JsonWriter jsonWriter;
-        private readonly bool jsonGrouped;
-        private readonly bool jsonSimplified;
-        private readonly string tempFileBuffer;
-        private readonly List<Action<FFileManifest>> jsonAction;
+        private readonly Utf8JsonWriter _jsonWriter;
+        private readonly bool _jsonGrouped;
+        private readonly bool _jsonSimplified;
+        private readonly string _tempFileBuffer;
+        private readonly List<Action<FFileManifest>> _jsonAction;
         private string tempFileName;
         private Stream reader;
         private FileStream fileHandle;
@@ -142,7 +142,7 @@
                 File.WriteAllBytes(fileName, manifestData);
                 fileHandle = File.OpenRead(fileName);
                 reader = new BufferedStream(fileHandle);
-                tempFileBuffer = fileName;
+                _tempFileBuffer = fileName;
             }
 
             reader = new MemoryStream(manifestData);
@@ -252,7 +252,7 @@
                     File.WriteAllBytes(fileName, data);
                     fileHandle = File.OpenRead(fileName);
                     reader = new BufferedStream(fileHandle);
-                    tempFileBuffer = fileName;
+                    _tempFileBuffer = fileName;
                     break;
                 case ManifestStorage.Memory:
                     reader = new MemoryStream(data);
@@ -267,19 +267,19 @@
             _readerSettings = readSettings ?? new CustomManifestReadingSettings();
             if (writeOutputToFileWhileReading)
             {
-                jsonWriter = new Utf8JsonWriter(File.Open(outputFileName, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None), new JsonWriterOptions()
+                _jsonWriter = new Utf8JsonWriter(File.Open(outputFileName, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None), new JsonWriterOptions()
                 {
                     Indented = (outputFormat & JsonOutputFormatFlags.Indented) != 0,
                     Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
                 });
 
-                jsonWriter.WriteStartObject();
+                _jsonWriter.WriteStartObject();
             }
 
-            jsonGrouped = (outputFormat & JsonOutputFormatFlags.Grouped) != 0;
-            jsonSimplified = (outputFormat & JsonOutputFormatFlags.Simplified) != 0;
-            Manifest = new ();
-            jsonAction = new(6);
+            _jsonGrouped = (outputFormat & JsonOutputFormatFlags.Grouped) != 0;
+            _jsonSimplified = (outputFormat & JsonOutputFormatFlags.Simplified) != 0;
+            Manifest = new();
+            _jsonAction = new(6);
         }
 
         public FManifest Manifest { get; }
@@ -296,10 +296,10 @@
             ReadFChunkDataList();
             ReadFFileManifest();
             ReadFCustomFields();
-            if (jsonWriter != null)
+            if (_jsonWriter != null)
             {
-                jsonWriter.WriteEndObject();
-                jsonWriter.Flush();
+                _jsonWriter.WriteEndObject();
+                _jsonWriter.Flush();
             }
         }
 
@@ -359,37 +359,37 @@
 
             Manifest.ManifestMeta = manifestMeta;
 
-            if (jsonWriter == null || jsonSimplified)
+            if (_jsonWriter == null || _jsonSimplified)
             {
                 return;
             }
 
-            jsonWriter.WriteNumber("ManifestVersion", manifestMeta.ManifestVersion);
-            jsonWriter.WriteBoolean("bIsFileData", manifestMeta.IsFileData);
-            jsonWriter.WriteString("ChunkSubdir", chunkSubdir.ToString());
-            jsonWriter.WriteString("FileSubdir", fileSubdir.ToString());
-            jsonWriter.WriteNumber("AppId", manifestMeta.AppId);
-            jsonWriter.WriteString("AppName", manifestMeta.AppName);
-            jsonWriter.WriteString("BuildVersion", manifestMeta.BuildVersion);
-            jsonWriter.WriteString("LaunchExe", manifestMeta.LaunchExe);
-            jsonWriter.WriteString("LaunchCommand", manifestMeta.LaunchCommand);
+            _jsonWriter.WriteNumber("ManifestVersion", manifestMeta.ManifestVersion);
+            _jsonWriter.WriteBoolean("bIsFileData", manifestMeta.IsFileData);
+            _jsonWriter.WriteString("ChunkSubdir", chunkSubdir.ToString());
+            _jsonWriter.WriteString("FileSubdir", fileSubdir.ToString());
+            _jsonWriter.WriteNumber("AppId", manifestMeta.AppId);
+            _jsonWriter.WriteString("AppName", manifestMeta.AppName);
+            _jsonWriter.WriteString("BuildVersion", manifestMeta.BuildVersion);
+            _jsonWriter.WriteString("LaunchExe", manifestMeta.LaunchExe);
+            _jsonWriter.WriteString("LaunchCommand", manifestMeta.LaunchCommand);
             List<string> prereq = manifestMeta.PrereqIds;
-            jsonWriter.WriteStartArray("PrereqIds");
+            _jsonWriter.WriteStartArray("PrereqIds");
             for (int i = 0; i < prereq.Count; i++)
             {
-                jsonWriter.WriteStringValue(prereq[i]);
+                _jsonWriter.WriteStringValue(prereq[i]);
             }
 
-            jsonWriter.WriteEndArray();
-            jsonWriter.WriteString("PrereqName", manifestMeta.PrereqName);
-            jsonWriter.WriteString("PrereqPath", manifestMeta.PrereqPath);
-            jsonWriter.WriteString("PrereqArgs", manifestMeta.PrereqArgs);
+            _jsonWriter.WriteEndArray();
+            _jsonWriter.WriteString("PrereqName", manifestMeta.PrereqName);
+            _jsonWriter.WriteString("PrereqPath", manifestMeta.PrereqPath);
+            _jsonWriter.WriteString("PrereqArgs", manifestMeta.PrereqArgs);
             if (serializeBuildId)
             {
-                jsonWriter.WriteString("BuildId", reader.ReadFString());
+                _jsonWriter.WriteString("BuildId", reader.ReadFString());
             }
 
-            jsonWriter.Flush();
+            _jsonWriter.Flush();
         }
 
         private void ReadFChunkDataList()
@@ -418,15 +418,15 @@
             {
                 hashes = reader.ReadArray(elementCount, () => Utilities.ULongToHexHash(reader.ReadULong()));
 
-                jsonAction.Add((_) =>
+                _jsonAction.Add((_) =>
                 {
-                    jsonWriter.WriteStartObject("ChunksHashList");
+                    _jsonWriter.WriteStartObject("ChunksHashList");
                     for (int i = 0; i < elementCount; i++)
                     {
-                        jsonWriter.WriteString(guids[i], hashes[i]);
+                        _jsonWriter.WriteString(guids[i], hashes[i]);
                     }
 
-                    jsonWriter.WriteEndObject();
+                    _jsonWriter.WriteEndObject();
                 });
             }
             else
@@ -439,17 +439,17 @@
             {
                 shaHashes = reader.ReadArray(elementCount, () => Utilities.BytesToHexadecimalString(reader.ReadBytes(20)));
 
-                if (!jsonSimplified)
+                if (!_jsonSimplified)
                 {
-                    jsonAction.Add((_) =>
+                    _jsonAction.Add((_) =>
                     {
-                        jsonWriter.WriteStartObject("ChunksShaHashList");
+                        _jsonWriter.WriteStartObject("ChunksShaHashList");
                         for (int i = 0; i < elementCount; i++)
                         {
-                            jsonWriter.WriteString(guids[i], shaHashes[i]);
+                            _jsonWriter.WriteString(guids[i], shaHashes[i]);
                         }
 
-                        jsonWriter.WriteEndObject();
+                        _jsonWriter.WriteEndObject();
                     });
                 }
             }
@@ -463,15 +463,15 @@
             {
                 groupNumbers = reader.ReadArray(elementCount, () => $"{reader.ReadByte():D2}");
 
-                jsonAction.Add((_) =>
+                _jsonAction.Add((_) =>
                 {
-                    jsonWriter.WriteStartObject("ChunksGroupNumberList");
+                    _jsonWriter.WriteStartObject("ChunksGroupNumberList");
                     for (int i = 0; i < elementCount; i++)
                     {
-                        jsonWriter.WriteString(guids[i], groupNumbers[i]);
+                        _jsonWriter.WriteString(guids[i], groupNumbers[i]);
                     }
 
-                    jsonWriter.WriteEndObject();
+                    _jsonWriter.WriteEndObject();
                 });
             }
             else
@@ -484,17 +484,17 @@
             {
                 windowSizes = reader.ReadArray(elementCount, () => (uint?)reader.ReadUInt());
 
-                if (!jsonSimplified)
+                if (!_jsonSimplified)
                 {
-                    jsonAction.Add((_) =>
+                    _jsonAction.Add((_) =>
                     {
-                        jsonWriter.WriteStartObject("ChunksWindowSizeList");
+                        _jsonWriter.WriteStartObject("ChunksWindowSizeList");
                         for (int i = 0; i < elementCount; i++)
                         {
-                            jsonWriter.WriteNumber(guids[i], (uint)windowSizes[i]);
+                            _jsonWriter.WriteNumber(guids[i], (uint)windowSizes[i]);
                         }
 
-                        jsonWriter.WriteEndObject();
+                        _jsonWriter.WriteEndObject();
                     });
                 }
             }
@@ -508,17 +508,17 @@
             {
                 filesSize = reader.ReadArray(elementCount, () => (long?)reader.ReadLong());
 
-                if (!jsonSimplified)
+                if (!_jsonSimplified)
                 {
-                    jsonAction.Add((_) =>
+                    _jsonAction.Add((_) =>
                     {
-                        jsonWriter.WriteStartObject("ChunksFileSizeList");
+                        _jsonWriter.WriteStartObject("ChunksFileSizeList");
                         for (int i = 0; i < elementCount; i++)
                         {
-                            jsonWriter.WriteNumber(guids[i], (long)filesSize[i]);
+                            _jsonWriter.WriteNumber(guids[i], (long)filesSize[i]);
                         }
 
-                        jsonWriter.WriteEndObject();
+                        _jsonWriter.WriteEndObject();
                     });
                 }
             }
@@ -535,21 +535,21 @@
 
             Manifest.ChunkList = chunkInfos;
 
-            if (jsonWriter is null || jsonGrouped)
+            if (_jsonWriter is null || _jsonGrouped)
             {
-                jsonAction.Clear();
+                _jsonAction.Clear();
                 return;
             }
 
-            jsonWriter.WriteStartObject("ChunksList");
-            for (int i = 0; i < jsonAction.Count; i++)
+            _jsonWriter.WriteStartObject("ChunksList");
+            for (int i = 0; i < _jsonAction.Count; i++)
             {
-                jsonAction[i](null);
+                _jsonAction[i](null);
             }
 
-            jsonWriter.WriteEndObject();
-            jsonWriter.Flush();
-            jsonAction.Clear();
+            _jsonWriter.WriteEndObject();
+            _jsonWriter.Flush();
+            _jsonAction.Clear();
         }
 
         private void ReadFFileManifest()
@@ -569,9 +569,9 @@
             {
                 fileNames = reader.ReadArray(elementCount, () => reader.ReadFString());
 
-                jsonAction.Add((fileManifest) =>
+                _jsonAction.Add((fileManifest) =>
                 {
-                    jsonWriter.WriteString("Filename", fileManifest.Filename);
+                    _jsonWriter.WriteString("Filename", fileManifest.Filename);
                 });
             }
             else
@@ -587,11 +587,11 @@
             {
                 symLinkTargets = reader.ReadArray(elementCount, () => reader.ReadFString());
 
-                if (!jsonSimplified)
+                if (!_jsonSimplified)
                 {
-                    jsonAction.Add((fileManifest) =>
+                    _jsonAction.Add((fileManifest) =>
                     {
-                        jsonWriter.WriteString("FileSymlinkTarget", fileManifest.SymlinkTarget);
+                        _jsonWriter.WriteString("FileSymlinkTarget", fileManifest.SymlinkTarget);
                     });
                 }
             }
@@ -608,11 +608,11 @@
             {
                 filesHash = reader.ReadArray(elementCount, () => Utilities.BytesToHexadecimalString(reader.ReadBytes(20)));
 
-                if (!jsonSimplified)
+                if (!_jsonSimplified)
                 {
-                    jsonAction.Add((fileManifest) =>
+                    _jsonAction.Add((fileManifest) =>
                     {
-                        jsonWriter.WriteString("FileHash", fileManifest.FileHash);
+                        _jsonWriter.WriteString("FileHash", fileManifest.FileHash);
                     });
                 }
             }
@@ -626,11 +626,11 @@
             {
                 filesMetaTags = reader.ReadArray(elementCount, () => (EFileMetaFlags?)reader.ReadByte());
 
-                if (!jsonSimplified)
+                if (!_jsonSimplified)
                 {
-                    jsonAction.Add((fileManifest) =>
+                    _jsonAction.Add((fileManifest) =>
                     {
-                        jsonWriter.WriteString("FileMetaFlag", fileManifest.FileMetaFlags.ToString());
+                        _jsonWriter.WriteString("FileMetaFlag", fileManifest.FileMetaFlags.ToString());
                     });
                 }
             }
@@ -644,18 +644,18 @@
             {
                 installTags = reader.ReadArray(elementCount, () => reader.ReadTArray(() => reader.ReadFString()));
 
-                if (!jsonSimplified)
+                if (!_jsonSimplified)
                 {
-                    jsonAction.Add((fileManifest) =>
+                    _jsonAction.Add((fileManifest) =>
                     {
-                        jsonWriter.WriteStartArray("InstallTags");
+                        _jsonWriter.WriteStartArray("InstallTags");
 
                         for (int j = 0; j < fileManifest.InstallTags.Count; j++)
                         {
-                            jsonWriter.WriteStringValue(fileManifest.InstallTags[j]);
+                            _jsonWriter.WriteStringValue(fileManifest.InstallTags[j]);
                         }
 
-                        jsonWriter.WriteEndArray();
+                        _jsonWriter.WriteEndArray();
                     });
                 }
             }
@@ -677,22 +677,22 @@
                 chunksParts = reader.ReadArray(elementCount, () => reader.ReadTArray(() => new FChunkPart(reader)));
 
                 Action<FFileManifest> ac;
-                if (!jsonGrouped)
+                if (!_jsonGrouped)
                 {
                     ac = (fileManifest) =>
                     {
-                        jsonWriter.WriteStartArray("FileChunkParts");
+                        _jsonWriter.WriteStartArray("FileChunkParts");
                         for (int k = 0; k < fileManifest.ChunkParts.Count; k++)
                         {
                             FChunkPart chunkPart = fileManifest.ChunkParts[k];
-                            jsonWriter.WriteStartObject();
-                            jsonWriter.WriteString("Guid", chunkPart.Guid);
-                            jsonWriter.WriteNumber("Offset", chunkPart.Offset);
-                            jsonWriter.WriteNumber("Size", chunkPart.Size);
-                            jsonWriter.WriteEndObject();
+                            _jsonWriter.WriteStartObject();
+                            _jsonWriter.WriteString("Guid", chunkPart.Guid);
+                            _jsonWriter.WriteNumber("Offset", chunkPart.Offset);
+                            _jsonWriter.WriteNumber("Size", chunkPart.Size);
+                            _jsonWriter.WriteEndObject();
                         }
 
-                        jsonWriter.WriteEndArray();
+                        _jsonWriter.WriteEndArray();
                     };
                 }
                 else
@@ -701,24 +701,24 @@
 
                     ac = (fileManifest) =>
                     {
-                        jsonWriter.WriteStartArray("FileChunkParts");
+                        _jsonWriter.WriteStartArray("FileChunkParts");
                         for (int k = 0; k < fileManifest.ChunkParts.Count; k++)
                         {
                             FChunkPart chunkPart = fileManifest.ChunkParts[k];
-                            jsonWriter.WriteStartObject();
-                            jsonWriter.WriteString("Guid", chunkPart.Guid);
-                            jsonWriter.WriteNumber("Offset", chunkPart.Offset);
-                            jsonWriter.WriteNumber("Size", chunkPart.Size);
-                            jsonWriter.WriteString("Hash", hashesLookup[chunkPart.Guid]);
-                            jsonWriter.WriteString("GroupNumber", datagroupLookup[chunkPart.Guid]);
-                            jsonWriter.WriteEndObject();
+                            _jsonWriter.WriteStartObject();
+                            _jsonWriter.WriteString("Guid", chunkPart.Guid);
+                            _jsonWriter.WriteNumber("Offset", chunkPart.Offset);
+                            _jsonWriter.WriteNumber("Size", chunkPart.Size);
+                            _jsonWriter.WriteString("Hash", hashesLookup[chunkPart.Guid]);
+                            _jsonWriter.WriteString("GroupNumber", datagroupLookup[chunkPart.Guid]);
+                            _jsonWriter.WriteEndObject();
                         }
 
-                        jsonWriter.WriteEndArray();
+                        _jsonWriter.WriteEndArray();
                     };
                 }
 
-                jsonAction.Add(ac);
+                _jsonAction.Add(ac);
             }
             else
             {
@@ -740,26 +740,26 @@
 
             Manifest.FileList = fFileManifest;
 
-            if (jsonWriter == null)
+            if (_jsonWriter == null)
             {
                 return;
             }
 
-            jsonWriter.WriteStartArray("FileManifestList");
+            _jsonWriter.WriteStartArray("FileManifestList");
             for (int i = 0; i < fFileManifest.Count; i++)
             {
-                jsonWriter.WriteStartObject();
+                _jsonWriter.WriteStartObject();
                 FFileManifest fileManifest = fFileManifest[i];
 
-                for (int j = 0; j < jsonAction.Count; j++)
+                for (int j = 0; j < _jsonAction.Count; j++)
                 {
-                    jsonAction[j](fileManifest);
+                    _jsonAction[j](fileManifest);
                 }
 
-                jsonWriter.WriteEndObject();
+                _jsonWriter.WriteEndObject();
             }
 
-            jsonWriter.WriteEndArray();
+            _jsonWriter.WriteEndArray();
         }
 
         private void ReadFCustomFields()
@@ -781,18 +781,18 @@
                 Manifest.CustomFields.Add(keys[i], values[i]);
             }
 
-            if (jsonWriter == null)
+            if (_jsonWriter == null)
             {
                 return;
             }
 
-            jsonWriter.WriteStartObject("CustomFields");
+            _jsonWriter.WriteStartObject("CustomFields");
             for (int i = 0; i < elementCount; i++)
             {
-                jsonWriter.WriteString(keys[i], values[i]);
+                _jsonWriter.WriteString(keys[i], values[i]);
             }
 
-            jsonWriter.WriteEndObject();
+            _jsonWriter.WriteEndObject();
         }
 
         private void GetDataAndCheckHash(Stream stream, int size, byte[] expectedHash, ManifestStorage tempManifestDataStorage)
@@ -881,7 +881,7 @@
             {
                 if (disposing)
                 {
-                    jsonWriter?.Dispose();
+                    _jsonWriter?.Dispose();
                     reader.Dispose();
                     fileHandle?.Close();
                     if (File.Exists(tempFileName))
@@ -889,9 +889,9 @@
                         File.Delete(tempFileName);
                     }
 
-                    if (File.Exists(tempFileBuffer))
+                    if (File.Exists(_tempFileBuffer))
                     {
-                        File.Delete(tempFileBuffer);
+                        File.Delete(_tempFileBuffer);
                     }
                 }
 

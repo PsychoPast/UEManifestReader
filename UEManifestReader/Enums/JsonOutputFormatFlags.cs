@@ -1,7 +1,7 @@
-﻿namespace UEManifestReader
-{
-    using System;
+﻿using System;
 
+namespace UEManifestReader
+{
     /// <summary>
     /// The way to write the json output data to the file.
     /// </summary>

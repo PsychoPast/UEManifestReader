@@ -74,47 +74,47 @@
             Save the manifest content on the disk.
             </summary>
         </member>
-        <member name="F:UEManifestReader.Objects.FChunkInfo.Guid">
+        <member name="P:UEManifestReader.Objects.FChunkInfo.Guid">
             <summary>
             The GUID for this data.
             </summary>
         </member>
-        <member name="F:UEManifestReader.Objects.FChunkInfo.Hash">
+        <member name="P:UEManifestReader.Objects.FChunkInfo.Hash">
             <summary>
             The FRollingHash hashed value for this chunk data.
             </summary>
         </member>
-        <member name="F:UEManifestReader.Objects.FChunkInfo.ShaHash">
+        <member name="P:UEManifestReader.Objects.FChunkInfo.ShaHash">
             <summary>
             The FSHA hashed value for this chunk data.
             </summary>
         </member>
-        <member name="F:UEManifestReader.Objects.FChunkInfo.GroupNumber">
+        <member name="P:UEManifestReader.Objects.FChunkInfo.GroupNumber">
             <summary>
             The group number this chunk divides into.
             </summary>
         </member>
-        <member name="F:UEManifestReader.Objects.FChunkInfo.WindowSize">
+        <member name="P:UEManifestReader.Objects.FChunkInfo.WindowSize">
             <summary>
             The window size for this chunk.
             </summary>
         </member>
-        <member name="F:UEManifestReader.Objects.FChunkInfo.FileSize">
+        <member name="P:UEManifestReader.Objects.FChunkInfo.FileSize">
             <summary>
             The file download size for this chunk.
             </summary>
         </member>
-        <member name="F:UEManifestReader.Objects.FChunkPart.Guid">
+        <member name="P:UEManifestReader.Objects.FChunkPart.Guid">
             <summary>
             The GUID of the chunk containing this part.
             </summary>
         </member>
-        <member name="F:UEManifestReader.Objects.FChunkPart.Offset">
+        <member name="P:UEManifestReader.Objects.FChunkPart.Offset">
             <summary>
             The offset of the first byte into the chunk.
             </summary>
         </member>
-        <member name="F:UEManifestReader.Objects.FChunkPart.Size">
+        <member name="P:UEManifestReader.Objects.FChunkPart.Size">
             <summary>
             The size of this part.
             </summary>
