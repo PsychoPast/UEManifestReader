@@ -1,10 +1,10 @@
 ﻿namespace UEManifestReader
 {
-    public sealed class CustomManifestReadingSettings
+    internal sealed class CustomManifestReadingSettings
     {
         private ushort settingsFlag;
 
-        public CustomManifestReadingSettings(
+        internal CustomManifestReadingSettings(
             bool readManifestMeta = true, 
             bool readChunksGuid = true, 
             bool readChunksHash = true, 
