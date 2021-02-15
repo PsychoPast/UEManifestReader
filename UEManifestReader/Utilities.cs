@@ -1,8 +1,8 @@
-﻿namespace UEManifestReader
-{
-    using System;
-    using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 
+namespace UEManifestReader
+{
     internal static unsafe class Utilities
     {
         internal static string BytesToHexadecimalString(ReadOnlySpan<byte> input)
@@ -36,7 +36,7 @@
         internal static string ULongToHexHash(ulong value)
         {
             Span<byte> buffer = stackalloc byte[sizeof(ulong)];
-            buffer[0] = (byte)(value >> 56);   // considering that the value is stored in little-endian format, the first byte of the array is the MSB of the value
+            buffer[0] = (byte)(value >> 56);  
             buffer[1] = (byte)(value >> 48);
             buffer[2] = (byte)(value >> 40);
             buffer[3] = (byte)(value >> 32);

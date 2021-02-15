@@ -1,10 +1,10 @@
-﻿namespace UEManifestReader
-{
-    using System;
-    using System.IO;
-    using System.Text;
-    using global::UEManifestReader.Exceptions;
+﻿using System;
+using System.IO;
+using System.Text;
+using UEManifestReader.Exceptions;
 
+namespace UEManifestReader
+{
     internal static class StreamExtension
     {
         internal static byte[] ReadBytes(this Stream stream, int length)
@@ -16,8 +16,8 @@
 
         internal static void SkipFString(this Stream stream)
         {
-            int fstringLength = stream.ReadInt();
-            stream.Position += fstringLength > 0 ? fstringLength : -fstringLength * sizeof(char);
+            int fStringLength = stream.ReadInt();
+            stream.Position += fStringLength > 0 ? fStringLength : -fStringLength * sizeof(char);
         }
 
         internal static bool ReadBool(this Stream stream) => UnsafeReadAs<byte>(stream) != 0;
@@ -46,22 +46,17 @@
                 saveNum = -saveNum;
             }
 
-            if (saveNum == 0)
+            switch (saveNum)
             {
-                return string.Empty;
-            }
-
-            if (saveNum == 1)
-            {
-                if (stream.ReadByte() != 0)
-                {
+                case 0:
+                    return string.Empty;
+                case 1 when stream.ReadByte() != 0:
                     throw new UEManifestReaderException(null, new FStringInvalidException("FString is not null terminated!"));
-                }
-
-                return string.Empty;
+                case 1:
+                    return string.Empty;
             }
 
-            if (bLoadUnicodeChar) // UCS2CHAR: unicode (16-bit char) string
+            if (bLoadUnicodeChar)
             {
                 char[] chars = new char[saveNum];
                 for (int i = 0; i < saveNum; i++)
@@ -76,16 +71,14 @@
 
                 return new string(chars, 0, chars.Length - 1);
             }
-            else // ANSICHAR: ascii (8-bit (1 byte) fixed-width 7-bit chars) string
-            {
-                byte[] buffer = stream.ReadBytes(saveNum);
-                if (buffer[^1] != '\0')
-                {
-                    throw new UEManifestReaderException(null, new FStringInvalidException("FString is not null terminated!"));
-                }
 
-                return Encoding.ASCII.GetString(buffer, 0, buffer.Length - 1);
+            byte[] buffer = stream.ReadBytes(saveNum);
+            if (buffer[^1] != '\0')
+            {
+                throw new UEManifestReaderException(null, new FStringInvalidException("FString is not null terminated!"));
             }
+
+            return Encoding.ASCII.GetString(buffer, 0, buffer.Length - 1);
         }
 
         internal static T[] ReadTArray<T>(this Stream stream, Func<T> readAs) => ReadArray(stream, stream.ReadInt(), readAs);

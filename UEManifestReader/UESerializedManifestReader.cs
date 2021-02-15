@@ -6,14 +6,14 @@ using System.Security.Cryptography;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading.Tasks;
-using global::UEManifestReader.Enums;
-using global::UEManifestReader.Exceptions;
-using global::UEManifestReader.Objects;
+using UEManifestReader.Enums;
+using UEManifestReader.Exceptions;
+using UEManifestReader.Objects;
 using Ionic.Zlib;
 
 namespace UEManifestReader
 {
-    public sealed class UEManifestReader : IDisposable
+    public sealed class UESerializedManifestReader : IDisposable
     {
         private const uint ManifestHeaderMagic = 0x44BEC00C;
         private readonly CustomManifestReadingSettings _readerSettings;
@@ -31,7 +31,7 @@ namespace UEManifestReader
         /// Initializes a new instance of the <see cref="UEManifestReader"/> class.
         /// </summary>
         /// <param name="file">Path to the file to read.</param>
-        public UEManifestReader(string file)
+        public UESerializedManifestReader(string file)
             : this(file, null)
         {
         }
@@ -41,7 +41,7 @@ namespace UEManifestReader
         /// </summary>
         /// <param name="file">Path to the file to read.</param>
         /// <param name="readSettings">Manifest reading settings.</param>
-        public UEManifestReader(string file, CustomManifestReadingSettings readSettings)
+        public UESerializedManifestReader(string file, CustomManifestReadingSettings readSettings)
             : this(file, readSettings, false, null)
         {
         }
@@ -53,7 +53,7 @@ namespace UEManifestReader
         /// <param name="readSettings">Manifest reading settings.</param>
         /// <param name="writeOutputToFileWhileReading">If <see langword="true"/>, output is gonna be written to file while the manifest file is being read using default json output format.</param>
         /// <param name="outputFileName">File name of the file to which the json output is written. Can be <see langword="null"/> if <paramref name="writeOutputToFileWhileReading"/> is <see langword="false"/>.</param>
-        public UEManifestReader(string file, CustomManifestReadingSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName)
+        public UESerializedManifestReader(string file, CustomManifestReadingSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName)
             : this(file, readSettings, writeOutputToFileWhileReading, outputFileName, JsonOutputFormatFlags.Default)
         {
         }
@@ -66,7 +66,7 @@ namespace UEManifestReader
         /// <param name="writeOutputToFileWhileReading">If <see langword="true"/>, output is gonna be written to file while the manifest file is being read using default json output format.</param>
         /// <param name="outputFileName">File name of the file to which the json output is written. Can be <see langword="null"/> if <paramref name="writeOutputToFileWhileReading"/> is <see langword="false"/>.</param>
         /// <param name="outputFormat">Json output format.</param>
-        public UEManifestReader(string file, CustomManifestReadingSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName, JsonOutputFormatFlags outputFormat)
+        public UESerializedManifestReader(string file, CustomManifestReadingSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName, JsonOutputFormatFlags outputFormat)
             : this(readSettings, writeOutputToFileWhileReading, outputFileName, outputFormat)
         {
             if (!File.Exists(file))
@@ -82,8 +82,8 @@ namespace UEManifestReader
         /// Initializes a new instance of the <see cref="UEManifestReader"/> class.
         /// </summary>
         /// <param name="manifestData">Manifest content data.</param>
-        public UEManifestReader(byte[] manifestData)
-            : this(manifestData, false, null)
+        public UESerializedManifestReader(byte[] manifestData)
+            : this(manifestData, false,null)
         {
         }
 
@@ -93,8 +93,8 @@ namespace UEManifestReader
         /// <param name="manifestData">Manifest content data.</param>
         /// <param name="writeDataToTempFile">If <see langword="true"/>, write the manifest data to a file and read it from it, else read the content from memory.</param>
         /// <param name="fileName">Name of the file to write the data to. Can be <see langword="null"/> if <paramref name="writeDataToTempFile"/> is <see langword="false"/>.</param>
-        public UEManifestReader(byte[] manifestData, bool writeDataToTempFile, string fileName)
-            : this(manifestData, writeDataToTempFile, fileName, null)
+        public UESerializedManifestReader(byte[] manifestData, bool writeDataToTempFile, string fileName)
+            : this(manifestData, writeDataToTempFile, fileName,null)
         {
         }
 
@@ -105,7 +105,7 @@ namespace UEManifestReader
         /// <param name="writeDataToTempFile">If <see langword="true"/>, write the manifest data to a file and read it from it, else read the content from memory.</param>
         /// <param name="fileName">Name of the file to write the data to. Can be <see langword="null"/> if <paramref name="writeDataToTempFile"/> is <see langword="false"/>.</param>
         /// <param name="readSettings">Manifest reading settings.</param>
-        public UEManifestReader(byte[] manifestData, bool writeDataToTempFile, string fileName, CustomManifestReadingSettings readSettings)
+        public UESerializedManifestReader(byte[] manifestData, bool writeDataToTempFile, string fileName, CustomManifestReadingSettings readSettings)
             : this(manifestData, writeDataToTempFile, fileName, readSettings, false, null)
         {
         }
@@ -119,7 +119,7 @@ namespace UEManifestReader
         /// <param name="readSettings">Manifest reading settings.</param>
         /// <param name="writeOutputToFileWhileReading">If <see langword="true"/>, output is gonna be written to file while the manifest file is being read using default json output format.</param>
         /// <param name="outputFileName">File name of the file to which the json output is written. Can be <see langword="null"/> if <paramref name="writeOutputToFileWhileReading"/> is <see langword="false"/>.</param>
-        public UEManifestReader(byte[] manifestData, bool writeDataToTempFile, string fileName, CustomManifestReadingSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName)
+        public UESerializedManifestReader(byte[] manifestData, bool writeDataToTempFile, string fileName, CustomManifestReadingSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName)
             : this(manifestData, writeDataToTempFile, fileName, readSettings, writeOutputToFileWhileReading, outputFileName, JsonOutputFormatFlags.Default)
         {
         }
@@ -134,7 +134,7 @@ namespace UEManifestReader
         /// <param name="writeOutputToFileWhileReading">If <see langword="true"/>, output is gonna be written to file while the manifest file is being read using default json output format.</param>
         /// <param name="outputFileName">File name of the file to which the json output is written. Can be <see langword="null"/> if <paramref name="writeOutputToFileWhileReading"/> is <see langword="false"/>.</param>
         /// <param name="outputFormat">Json output format.</param>
-        public UEManifestReader(byte[] manifestData, bool writeDataToTempFile, string fileName, CustomManifestReadingSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName, JsonOutputFormatFlags outputFormat)
+        public UESerializedManifestReader(byte[] manifestData, bool writeDataToTempFile, string fileName, CustomManifestReadingSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName, JsonOutputFormatFlags outputFormat)
             : this(readSettings, writeOutputToFileWhileReading, outputFileName, outputFormat)
         {
             if (writeDataToTempFile)
@@ -152,7 +152,7 @@ namespace UEManifestReader
         /// Initializes a new instance of the <see cref="UEManifestReader"/> class.
         /// </summary>
         /// <param name="stream">The <see cref="Stream"/> of the manifest content.</param>
-        public UEManifestReader(Stream stream)
+        public UESerializedManifestReader(Stream stream)
             : this(stream, null)
         {
         }
@@ -162,7 +162,7 @@ namespace UEManifestReader
         /// </summary>
         /// <param name="stream">The <see cref="Stream"/> of the manifest content.</param>
         /// <param name="readSettings">Manifest reading settings.</param>
-        public UEManifestReader(Stream stream, CustomManifestReadingSettings readSettings)
+        public UESerializedManifestReader(Stream stream, CustomManifestReadingSettings readSettings)
             : this(stream, readSettings, false, null)
         {
         }
@@ -174,7 +174,7 @@ namespace UEManifestReader
         /// <param name="readSettings">Manifest reading settings.</param>
         /// <param name="writeOutputToFileWhileReading">If <see langword="true"/>, output is gonna be written to file while the manifest file is being read using default json output format.</param>
         /// <param name="outputFileName">File name of the file to which the json output is written. Can be <see langword="null"/> if <paramref name="writeOutputToFileWhileReading"/> is <see langword="false"/>.</param>
-        public UEManifestReader(Stream stream, CustomManifestReadingSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName)
+        public UESerializedManifestReader(Stream stream, CustomManifestReadingSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName)
             : this(stream, readSettings, writeOutputToFileWhileReading, outputFileName, JsonOutputFormatFlags.Default)
         {
         }
@@ -187,7 +187,7 @@ namespace UEManifestReader
         /// <param name="writeOutputToFileWhileReading">If <see langword="true"/>, output is gonna be written to file while the manifest file is being read using default json output format.</param>
         /// <param name="outputFileName">File name of the file to which the json output is written. Can be <see langword="null"/> if <paramref name="writeOutputToFileWhileReading"/> is <see langword="false"/>.</param>
         /// <param name="outputFormat">Json output format.</param>
-        public UEManifestReader(Stream stream, CustomManifestReadingSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName, JsonOutputFormatFlags outputFormat)
+        public UESerializedManifestReader(Stream stream, CustomManifestReadingSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName, JsonOutputFormatFlags outputFormat)
             : this(readSettings, writeOutputToFileWhileReading, outputFileName, outputFormat) => reader = stream;
 
         /// <summary>
@@ -196,7 +196,7 @@ namespace UEManifestReader
         /// <param name="manifestUrl">The Url of the manifest file to download.</param>
         /// <param name="manifestStorage">The location where to save the download manifest.</param>
         /// <param name="fileName">Name of the file to write the data to. Can be <see langword="null"/> if <paramref name="manifestStorage"/> is <see cref="ManifestStorage.Memory"/>.</param>
-        public UEManifestReader(Uri manifestUrl, ManifestStorage manifestStorage, string fileName)
+        public UESerializedManifestReader(Uri manifestUrl, ManifestStorage manifestStorage, string fileName)
             : this(manifestUrl, manifestStorage, fileName, null)
         {
         }
@@ -208,7 +208,7 @@ namespace UEManifestReader
         /// <param name="manifestStorage">The location where to save the download manifest.</param>
         /// <param name="fileName">Name of the file to write the data to. Can be <see langword="null"/> if <paramref name="manifestStorage"/> is <see cref="ManifestStorage.Memory"/>.</param>
         /// <param name="readSettings">Manifest reading settings.</param>
-        public UEManifestReader(Uri manifestUrl, ManifestStorage manifestStorage, string fileName, CustomManifestReadingSettings readSettings)
+        public UESerializedManifestReader(Uri manifestUrl, ManifestStorage manifestStorage, string fileName, CustomManifestReadingSettings readSettings)
             : this(manifestUrl, manifestStorage, fileName, readSettings, false, null)
         {
         }
@@ -222,7 +222,7 @@ namespace UEManifestReader
         /// <param name="readSettings">Manifest reading settings.</param>
         /// <param name="writeOutputToFileWhileReading">If <see langword="true"/>, output is gonna be written to file while the manifest file is being read using default json output format.</param>
         /// <param name="outputFileName">File name of the file to which the json output is written. Can be <see langword="null"/> if <paramref name="writeOutputToFileWhileReading"/> is <see langword="false"/>.</param>
-        public UEManifestReader(Uri manifestUrl, ManifestStorage manifestStorage, string fileName, CustomManifestReadingSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName)
+        public UESerializedManifestReader(Uri manifestUrl, ManifestStorage manifestStorage, string fileName, CustomManifestReadingSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName)
             : this(manifestUrl, manifestStorage, fileName, readSettings, writeOutputToFileWhileReading, outputFileName, JsonOutputFormatFlags.Default)
         {
         }
@@ -237,7 +237,7 @@ namespace UEManifestReader
         /// <param name="writeOutputToFileWhileReading">If <see langword="true"/>, output is gonna be written to file while the manifest file is being read using default json output format.</param>
         /// <param name="outputFileName">File name of the file to which the json output is written. Can be <see langword="null"/> if <paramref name="writeOutputToFileWhileReading"/> is <see langword="false"/>.</param>
         /// <param name="outputFormat">Json output format.</param>
-        public UEManifestReader(Uri manifestUrl, ManifestStorage manifestStorage, string fileName, CustomManifestReadingSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName, JsonOutputFormatFlags outputFormat)
+        public UESerializedManifestReader(Uri manifestUrl, ManifestStorage manifestStorage, string fileName, CustomManifestReadingSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName, JsonOutputFormatFlags outputFormat)
             : this(readSettings, writeOutputToFileWhileReading, outputFileName, outputFormat)
         {
             byte[] data;
@@ -262,7 +262,7 @@ namespace UEManifestReader
             }
         }
 
-        private UEManifestReader(CustomManifestReadingSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName, JsonOutputFormatFlags outputFormat)
+        private UESerializedManifestReader(CustomManifestReadingSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName, JsonOutputFormatFlags outputFormat)
         {
             _readerSettings = readSettings ?? new CustomManifestReadingSettings();
             if (writeOutputToFileWhileReading)
@@ -831,8 +831,8 @@ namespace UEManifestReader
 
             if (stream is ZlibStream)
             {
-                fileHandle.DisposeAsync();
-                reader.DisposeAsync();
+                fileHandle.Dispose();
+                reader.Dispose();
                 if (tempManifestDataStorage == ManifestStorage.Disk)
                 {
                     tempFileName = $"{Environment.TickCount64}.tmp"; // in order to have a random temp file name
@@ -869,7 +869,7 @@ namespace UEManifestReader
                     dgLookup.Add(chunkInfo.Guid, chunkInfo.GroupNumber);
                 }
             });
-            Task.WhenAll(hashLookup, datagroupLookup).GetAwaiter().GetResult();
+            Task.WaitAll(hashLookup, datagroupLookup);
 
             hashesLookup = haLookup;
             datagroupsLookup = dgLookup;

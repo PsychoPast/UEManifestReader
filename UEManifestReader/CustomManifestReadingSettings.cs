@@ -1,6 +1,8 @@
-﻿namespace UEManifestReader
+﻿using System.Runtime.CompilerServices;
+
+namespace UEManifestReader
 {
-    internal sealed class CustomManifestReadingSettings
+    public sealed class CustomManifestReadingSettings
     {
         private ushort settingsFlag;
 
@@ -72,13 +74,14 @@
         {
             for (int i = 0; i < values.Length; i++)
             {
-                if (values[i] == true)
+                if (values[i])
                 {
                     settingsFlag |= (ushort)(1 << i);
                 }
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool CheckFlag(byte index) => ((settingsFlag >> index) & 1) != 0;
     }
 }
