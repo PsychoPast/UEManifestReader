@@ -33,6 +33,7 @@ namespace UEManifestReader
             return buffer;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static string ULongToHexHash(ulong value)
         {
             Span<byte> buffer = stackalloc byte[sizeof(ulong)];
@@ -56,8 +57,8 @@ namespace UEManifestReader
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static char GetHexCharFromByte(byte rawByte)
             => (char)(rawByte > 9 ?
-            rawByte - 10 + 'A' :
-            rawByte + '0');
+                          rawByte - 10 + 'A' :
+                          rawByte + '0');
 
         private static void ToHexadecimalString(int length, char* buffer, byte* pByte)
         {

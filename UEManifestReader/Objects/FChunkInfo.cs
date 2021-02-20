@@ -52,6 +52,12 @@
 
         public override int GetHashCode() => HashCode.Combine(Guid, Hash);
 
+        /// <summary>
+        /// Returns the download path.
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString() => $"{GroupNumber}/{Hash}_{Guid}.chunk";
+
         public bool Equals(FChunkInfo other) => other == this;
     }
 }

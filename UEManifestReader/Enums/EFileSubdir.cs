@@ -3,7 +3,7 @@
     public enum EFileSubdir
     {
         /// <summary>
-        /// Only if <see cref="CustomManifestReadingSettings.ShouldReadManifestMeta"/> is <see langword="false"/>.
+        /// Only if <see cref="CustomManifestReadingSettings.ReadManifestMeta"/> is <see langword="false"/>.
         /// </summary>
         Undefined,
         Files,

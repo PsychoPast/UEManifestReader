@@ -6,7 +6,7 @@ namespace UEManifestReader
     {
         private ushort settingsFlag;
 
-        internal CustomManifestReadingSettings(
+        public CustomManifestReadingSettings(
             bool readManifestMeta = true, 
             bool readChunksGuid = true, 
             bool readChunksHash = true, 
@@ -38,37 +38,55 @@ namespace UEManifestReader
                 readFChunksParts,
                 readCustomFields);
 
-        internal bool ShouldReadManifestMeta => CheckFlag(0);
+        public static CustomManifestReadingSettings ReadOnlyWhatIsNecessaryForDownload =>
+            new
+                (
+                true, 
+                 true, 
+                 true, 
+                 false, 
+                true,
+                false, 
+                false,
+                true, 
+                false, 
+                false,
+                false, 
+                false, 
+                true,
+                true);
 
-        internal bool ShouldReadChunksGuid => CheckFlag(1);
+        public bool ReadManifestMeta => CheckFlag(0);
 
-        internal bool ShouldReadChunksHash => CheckFlag(2);
+        public bool ReadChunksGuid => CheckFlag(1);
 
-        internal bool ShouldReadChunksShaHash => CheckFlag(3);
+        public bool ReadChunksHash => CheckFlag(2);
 
-        internal bool ShoudlReadChunksGroupNumber => CheckFlag(4);
+        public bool ReadChunksShaHash => CheckFlag(3);
 
-        internal bool ShouldReadChunksWindowSize => CheckFlag(5);
+        public bool ReadChunksGroupNumber => CheckFlag(4);
 
-        internal bool ShouldReadChunksDownloadSize => CheckFlag(6);
+        public bool ReadChunksWindowSize => CheckFlag(5);
 
-        internal bool ShouldReadFileFileName => CheckFlag(7);
+        public bool ReadChunksDownloadSize => CheckFlag(6);
 
-        internal bool ShouldReadFileSymLinkTarget => CheckFlag(8);
+        public bool ReadFileFileName => CheckFlag(7);
 
-        internal bool ShouldReadFileHash => CheckFlag(9);
+        public bool ReadFileSymLinkTarget => CheckFlag(8);
 
-        internal bool ShouldReadFileMetaFlag => CheckFlag(10);
+        public bool ReadFileHash => CheckFlag(9);
 
-        internal bool ShouldReadFileInstallTags => CheckFlag(11);
+        public bool ReadFileMetaFlag => CheckFlag(10);
 
-        internal bool ShouldReadFChunkPart => CheckFlag(12);
+        public bool ReadFileInstallTags => CheckFlag(11);
 
-        internal bool ShouldReadCustomFields => CheckFlag(13);
+        public bool ReadFChunkPart => CheckFlag(12);
 
-        internal bool ShouldReadChunkDataList => ShouldReadChunksGuid || ShouldReadChunksHash || ShouldReadChunksShaHash || ShoudlReadChunksGroupNumber || ShouldReadChunksWindowSize || ShouldReadChunksDownloadSize;
+        public bool ReadCustomFields => CheckFlag(13);
 
-        internal bool ShoudReadFFileManifestList => ShouldReadFileFileName || ShouldReadFileSymLinkTarget || ShouldReadFileHash || ShouldReadFileMetaFlag || ShouldReadFileInstallTags;
+        public bool ReadChunkDataList => ReadChunksGuid || ReadChunksHash || ReadChunksShaHash || ReadChunksGroupNumber || ReadChunksWindowSize || ReadChunksDownloadSize;
+
+        public bool ReadFFileManifestList => ReadFileFileName || ReadFileSymLinkTarget || ReadFileHash || ReadFileMetaFlag || ReadFChunkPart ||  ReadFileInstallTags;
 
         private void SetFlags(params bool[] values)
         {

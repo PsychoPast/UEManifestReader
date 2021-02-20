@@ -1,10 +1,15 @@
-﻿namespace UEManifestReader.Objects
-{
-    using System.Collections.Generic;
-    using global::UEManifestReader.Enums;
+﻿using System.Collections.Generic;
+using UEManifestReader.Enums;
 
+namespace UEManifestReader.Objects
+{
     public class FManifest
     {
+        /// <summary>
+        /// Base URLs for downloading chunks.
+        /// </summary>
+        public List<string> BaseUrls { get; internal set; }
+
         /// <summary>
         /// The chunks subdir.
         /// </summary>
@@ -34,5 +39,6 @@
         /// The custom fields.
         /// </summary>
         public Dictionary<string, string> CustomFields { get; internal set; }
+
     }
 }

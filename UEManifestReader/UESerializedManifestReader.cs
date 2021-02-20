@@ -10,10 +10,11 @@ using UEManifestReader.Enums;
 using UEManifestReader.Exceptions;
 using UEManifestReader.Objects;
 using Ionic.Zlib;
+using System.Linq;
 
 namespace UEManifestReader
 {
-    public sealed class UESerializedManifestReader : IDisposable
+    public sealed class UESerializedManifestReader : IManifestReader, IDisposable
     {
         private const uint ManifestHeaderMagic = 0x44BEC00C;
         private readonly CustomManifestReadingSettings _readerSettings;
@@ -278,11 +279,32 @@ namespace UEManifestReader
 
             _jsonGrouped = (outputFormat & JsonOutputFormatFlags.Grouped) != 0;
             _jsonSimplified = (outputFormat & JsonOutputFormatFlags.Simplified) != 0;
+            WriteOutputToFile = writeOutputToFileWhileReading;
+            OutputFormat = outputFormat;
+            ReadingSettings = readSettings;
             Manifest = new();
             _jsonAction = new(6);
         }
 
+        /// <summary>
+        /// Parsed manifest.
+        /// </summary>
         public FManifest Manifest { get; }
+
+        /// <summary>
+        /// Manifest reading settings.
+        /// </summary>
+        public CustomManifestReadingSettings ReadingSettings { get; }
+
+        /// <summary>
+        /// If <see langword="true"/>, writes parsed manifest to file.
+        /// </summary>
+        public bool WriteOutputToFile { get; }
+
+        /// <summary>
+        /// Json output format.
+        /// </summary>
+        public JsonOutputFormatFlags OutputFormat { get; }
 
         /// <summary>
         /// Read the manifest.
@@ -292,10 +314,10 @@ namespace UEManifestReader
         public void ReadManifest(ManifestStorage tempManifestDataStorage = ManifestStorage.Memory)
         {
             ReadFManifestHeader(tempManifestDataStorage);
-            ReadFManifestMeta();
-            ReadFChunkDataList();
-            ReadFFileManifest();
-            ReadFCustomFields();
+            ExecuteReadIfTrue(_readerSettings.ReadManifestMeta, ReadFManifestMeta);
+            ExecuteReadIfTrue(_readerSettings.ReadChunkDataList, ReadFChunkDataList);
+            ExecuteReadIfTrue(_readerSettings.ReadFFileManifestList, ReadFFileManifest);
+            ExecuteReadIfTrue(_readerSettings.ReadCustomFields, ReadFCustomFields);
             if (_jsonWriter != null)
             {
                 _jsonWriter.WriteEndObject();
@@ -317,7 +339,6 @@ namespace UEManifestReader
             byte[] sHAHash = reader.ReadBytes(20);
             EManifestStorageFlags storedAs = (EManifestStorageFlags)reader.ReadByte();
             EFeatureLevel version = headerSize > 37 ? (EFeatureLevel)reader.ReadInt() : EFeatureLevel.StoredAsCompressedUClass;
-
             if (version < EFeatureLevel.StoredAsBinaryData)
             {
                 throw new UEManifestReaderException($"Manifest version {version} is not supported for the time being!", new NotSupportedException());
@@ -335,30 +356,19 @@ namespace UEManifestReader
 
         private void ReadFManifestMeta()
         {
-            uint dataSize = reader.ReadUInt(); // size of FManifestMeta data
-            if (!_readerSettings.ShouldReadManifestMeta)
-            {
-                reader.Position += dataSize - sizeof(uint);
-                return;
-            }
-
             EManifestMetaVersion dataVersion = (EManifestMetaVersion)reader.ReadByte();
             bool serializeBuildId = dataVersion >= EManifestMetaVersion.SerialisesBuildId;
             FManifestMeta manifestMeta = new(reader, serializeBuildId);
-
             EFeatureLevel version = (EFeatureLevel)manifestMeta.ManifestVersion;
-
             EChunkSubdir chunkSubdir = Manifest.ChunkSubdir = version < EFeatureLevel.DataFileRenames ? EChunkSubdir.Chunks
-                : version < EFeatureLevel.ChunkCompressionSupport ? EChunkSubdir.ChunksV2
-                : version < EFeatureLevel.VariableSizeChunksWithoutWindowSizeChunkInfo ? EChunkSubdir.ChunksV3
-                : EChunkSubdir.ChunksV4;
+                                                              : version < EFeatureLevel.ChunkCompressionSupport ? EChunkSubdir.ChunksV2
+                                                              : version < EFeatureLevel.VariableSizeChunksWithoutWindowSizeChunkInfo ? EChunkSubdir.ChunksV3
+                                                              : EChunkSubdir.ChunksV4;
 
             EFileSubdir fileSubdir = Manifest.FileSubdir = version < EFeatureLevel.DataFileRenames ? EFileSubdir.Files
-                : version < EFeatureLevel.StoresChunkDataShaHashes ? EFileSubdir.FilesV2
-                : EFileSubdir.FilesV3;
-
+                                                           : version < EFeatureLevel.StoresChunkDataShaHashes ? EFileSubdir.FilesV2
+                                                           : EFileSubdir.FilesV3;
             Manifest.ManifestMeta = manifestMeta;
-
             if (_jsonWriter == null || _jsonSimplified)
             {
                 return;
@@ -394,63 +404,87 @@ namespace UEManifestReader
 
         private void ReadFChunkDataList()
         {
-            uint dataSize = reader.ReadUInt(); // size of FChunkDataList data
-            if (!_readerSettings.ShouldReadChunkDataList)
-            {
-                reader.Position += dataSize - sizeof(uint);
-                return;
-            }
-
-            EChunkDataListVersion dataVersion = (EChunkDataListVersion)reader.ReadByte();
+            _ = /*(EChunkDataListVersion)*/reader.ReadByte(); //no need to verify the version. The authenticity of the file is asserted when comparing the hashes
             int elementCount = reader.ReadInt();
             string[] guids = null;
-            if (_readerSettings.ShouldReadChunksGuid)
+            Action<string, string[]> jsonGuidPropertiesActionString;
+            Action<string, uint?[]> jsonGuidPropertyActionNumber;
+            if (_readerSettings.ReadChunksGuid)
             {
                 guids = reader.ReadArray(elementCount, () => new FGuid(reader).ToString());
+                jsonGuidPropertiesActionString = (propertyName, value) =>
+                    {
+                        _jsonWriter.WriteStartObject("ChunksHashList");
+                        for (int i = 0; i < elementCount; i++)
+                        {
+                            _jsonWriter.WriteString(guids[i], value[i]);
+                        }
+
+                        _jsonWriter.WriteEndObject();
+                    };
+
+                jsonGuidPropertyActionNumber = (propertyName, value) =>
+                    {
+                        _jsonWriter.WriteStartObject("ChunksHashList");
+                        for (int i = 0; i < elementCount; i++)
+                        {
+                            _jsonWriter.WriteNumber(guids[i], (uint)(value[i]));
+                        }
+
+                        _jsonWriter.WriteEndObject();
+                    };
             }
             else
             {
+                jsonGuidPropertiesActionString = (propertyName, value) =>
+                    {
+                        _jsonWriter.WriteStartArray("ChunksHashList");
+                        for (int i = 0; i < elementCount; i++)
+                        {
+                            _jsonWriter.WriteStringValue(value[i]);
+                        }
+
+                        _jsonWriter.WriteEndArray();
+                    };
+
+                jsonGuidPropertyActionNumber = (propertyName, value) =>
+                    {
+                        _jsonWriter.WriteStartArray("ChunksHashList");
+                        for (int i = 0; i < elementCount; i++)
+                        {
+                            _jsonWriter.WriteNumberValue((uint)(value[i]));
+                        }
+
+                        _jsonWriter.WriteEndArray();
+                    };
+
                 reader.Position += elementCount * 16; // sizeof(FGuid) = 16 bytes
             }
 
             string[] hashes = null;
-            if (_readerSettings.ShouldReadChunksHash)
+            if (_readerSettings.ReadChunksHash)
             {
                 hashes = reader.ReadArray(elementCount, () => Utilities.ULongToHexHash(reader.ReadULong()));
-
                 _jsonAction.Add((_) =>
-                {
-                    _jsonWriter.WriteStartObject("ChunksHashList");
-                    for (int i = 0; i < elementCount; i++)
                     {
-                        _jsonWriter.WriteString(guids[i], hashes[i]);
-                    }
-
-                    _jsonWriter.WriteEndObject();
-                });
+                        jsonGuidPropertiesActionString("ChunksHashList", hashes);
+                    });
             }
             else
             {
-                reader.Position += elementCount * sizeof(ulong);  // in the manifest, hashes are stored as ulong values (8 bytes) but they are converted to hex string during parsing process in order for them to be usable
+                reader.Position += elementCount * sizeof(ulong);  // in the manifest, hashes are stored as ulong values (8 bytes) but they are converted to hex string during the parsing process in order to be usable
             }
 
             string[] shaHashes = null;
-            if (_readerSettings.ShouldReadChunksShaHash)
+            if (_readerSettings.ReadChunksShaHash)
             {
                 shaHashes = reader.ReadArray(elementCount, () => Utilities.BytesToHexadecimalString(reader.ReadBytes(20)));
-
                 if (!_jsonSimplified)
                 {
                     _jsonAction.Add((_) =>
-                    {
-                        _jsonWriter.WriteStartObject("ChunksShaHashList");
-                        for (int i = 0; i < elementCount; i++)
                         {
-                            _jsonWriter.WriteString(guids[i], shaHashes[i]);
-                        }
-
-                        _jsonWriter.WriteEndObject();
-                    });
+                            jsonGuidPropertiesActionString("ChunksShaHashList", shaHashes);
+                        });
                 }
             }
             else
@@ -459,20 +493,14 @@ namespace UEManifestReader
             }
 
             string[] groupNumbers = null;
-            if (_readerSettings.ShoudlReadChunksGroupNumber)
+            if (_readerSettings.ReadChunksGroupNumber)
             {
                 groupNumbers = reader.ReadArray(elementCount, () => $"{reader.ReadByte():D2}");
-
                 _jsonAction.Add((_) =>
-                {
-                    _jsonWriter.WriteStartObject("ChunksGroupNumberList");
-                    for (int i = 0; i < elementCount; i++)
                     {
-                        _jsonWriter.WriteString(guids[i], groupNumbers[i]);
-                    }
+                        jsonGuidPropertiesActionString("ChunksGroupNumberList", groupNumbers);
 
-                    _jsonWriter.WriteEndObject();
-                });
+                    });
             }
             else
             {
@@ -480,46 +508,33 @@ namespace UEManifestReader
             }
 
             uint?[] windowSizes = null;
-            if (_readerSettings.ShouldReadChunksWindowSize)
+            if (_readerSettings.ReadChunksWindowSize)
             {
                 windowSizes = reader.ReadArray(elementCount, () => (uint?)reader.ReadUInt());
 
                 if (!_jsonSimplified)
                 {
                     _jsonAction.Add((_) =>
-                    {
-                        _jsonWriter.WriteStartObject("ChunksWindowSizeList");
-                        for (int i = 0; i < elementCount; i++)
                         {
-                            _jsonWriter.WriteNumber(guids[i], (uint)windowSizes[i]);
-                        }
-
-                        _jsonWriter.WriteEndObject();
-                    });
+                            jsonGuidPropertyActionNumber("ChunksWindowSizeList", windowSizes);
+                        });
                 }
             }
             else
             {
-                reader.Position += elementCount * sizeof(uint); 
+                reader.Position += elementCount * sizeof(uint);
             }
 
-            long?[] filesSize = null;
-            if (_readerSettings.ShouldReadChunksDownloadSize)
+            uint?[] filesSize = null;
+            if (_readerSettings.ReadChunksDownloadSize)
             {
-                filesSize = reader.ReadArray(elementCount, () => (long?)reader.ReadLong());
-
+                filesSize = reader.ReadArray(elementCount, () => (uint?)reader.ReadLong());
                 if (!_jsonSimplified)
                 {
                     _jsonAction.Add((_) =>
-                    {
-                        _jsonWriter.WriteStartObject("ChunksFileSizeList");
-                        for (int i = 0; i < elementCount; i++)
                         {
-                            _jsonWriter.WriteNumber(guids[i], (long)filesSize[i]);
-                        }
-
-                        _jsonWriter.WriteEndObject();
-                    });
+                            jsonGuidPropertyActionNumber("ChunksFileSizeList", filesSize);
+                        });
                 }
             }
             else
@@ -534,8 +549,7 @@ namespace UEManifestReader
             }
 
             Manifest.ChunkList = chunkInfos;
-
-            if (_jsonWriter is null || _jsonGrouped)
+            if (_jsonWriter == null || _jsonGrouped)
             {
                 _jsonAction.Clear();
                 return;
@@ -546,7 +560,6 @@ namespace UEManifestReader
             {
                 _jsonAction[i](null);
             }
-
             _jsonWriter.WriteEndObject();
             _jsonWriter.Flush();
             _jsonAction.Clear();
@@ -554,25 +567,16 @@ namespace UEManifestReader
 
         private void ReadFFileManifest()
         {
-            uint dataSize = reader.ReadUInt(); // size of FFileManifest data
-            if (!_readerSettings.ShoudReadFFileManifestList)
-            {
-                reader.Position += dataSize - sizeof(uint);
-                return;
-            }
-
-            EFileManifestListVersion dataVersion = (EFileManifestListVersion)reader.ReadByte();
+            _ = /*(EChunkDataListVersion)*/reader.ReadByte();
             int elementCount = reader.ReadInt();
-
             string[] fileNames = null;
-            if (_readerSettings.ShouldReadFileFileName)
+            if (_readerSettings.ReadFileFileName)
             {
                 fileNames = reader.ReadArray(elementCount, () => reader.ReadFString());
-
                 _jsonAction.Add((fileManifest) =>
-                {
-                    _jsonWriter.WriteString("Filename", fileManifest.Filename);
-                });
+                    {
+                        _jsonWriter.WriteString("Filename", fileManifest.Filename);
+                    });
             }
             else
             {
@@ -583,16 +587,16 @@ namespace UEManifestReader
             }
 
             string[] symLinkTargets = null;
-            if (_readerSettings.ShouldReadFileSymLinkTarget)
+            if (_readerSettings.ReadFileSymLinkTarget)
             {
                 symLinkTargets = reader.ReadArray(elementCount, () => reader.ReadFString());
 
                 if (!_jsonSimplified)
                 {
                     _jsonAction.Add((fileManifest) =>
-                    {
-                        _jsonWriter.WriteString("FileSymlinkTarget", fileManifest.SymlinkTarget);
-                    });
+                        {
+                            _jsonWriter.WriteString("FileSymlinkTarget", fileManifest.SymlinkTarget);
+                        });
                 }
             }
             else
@@ -604,16 +608,15 @@ namespace UEManifestReader
             }
 
             string[] filesHash = null;
-            if (_readerSettings.ShouldReadFileHash)
+            if (_readerSettings.ReadFileHash)
             {
                 filesHash = reader.ReadArray(elementCount, () => Utilities.BytesToHexadecimalString(reader.ReadBytes(20)));
-
                 if (!_jsonSimplified)
                 {
                     _jsonAction.Add((fileManifest) =>
-                    {
-                        _jsonWriter.WriteString("FileHash", fileManifest.FileHash);
-                    });
+                        {
+                            _jsonWriter.WriteString("FileHash", fileManifest.FileHash);
+                        });
                 }
             }
             else
@@ -622,16 +625,15 @@ namespace UEManifestReader
             }
 
             EFileMetaFlags?[] filesMetaTags = null;
-            if (_readerSettings.ShouldReadFileMetaFlag)
+            if (_readerSettings.ReadFileMetaFlag)
             {
                 filesMetaTags = reader.ReadArray(elementCount, () => (EFileMetaFlags?)reader.ReadByte());
-
                 if (!_jsonSimplified)
                 {
                     _jsonAction.Add((fileManifest) =>
-                    {
-                        _jsonWriter.WriteString("FileMetaFlag", fileManifest.FileMetaFlags.ToString());
-                    });
+                        {
+                            _jsonWriter.WriteString("FileMetaFlag", fileManifest.FileMetaFlags.ToString());
+                        });
                 }
             }
             else
@@ -640,23 +642,21 @@ namespace UEManifestReader
             }
 
             string[][] installTags = null;
-            if (_readerSettings.ShouldReadFileInstallTags)
+            if (_readerSettings.ReadFileInstallTags)
             {
                 installTags = reader.ReadArray(elementCount, () => reader.ReadTArray(() => reader.ReadFString()));
-
                 if (!_jsonSimplified)
                 {
                     _jsonAction.Add((fileManifest) =>
-                    {
-                        _jsonWriter.WriteStartArray("InstallTags");
-
-                        for (int j = 0; j < fileManifest.InstallTags.Count; j++)
                         {
-                            _jsonWriter.WriteStringValue(fileManifest.InstallTags[j]);
-                        }
+                            _jsonWriter.WriteStartArray("InstallTags");
+                            for (int j = 0; j < fileManifest.InstallTags.Count; j++)
+                            {
+                                _jsonWriter.WriteStringValue(fileManifest.InstallTags[j]);
+                            }
 
-                        _jsonWriter.WriteEndArray();
-                    });
+                            _jsonWriter.WriteEndArray();
+                        });
                 }
             }
             else
@@ -672,10 +672,9 @@ namespace UEManifestReader
             }
 
             FChunkPart[][] chunksParts = null;
-            if (_readerSettings.ShouldReadFChunkPart)
+            if (_readerSettings.ReadFChunkPart)
             {
                 chunksParts = reader.ReadArray(elementCount, () => reader.ReadTArray(() => new FChunkPart(reader)));
-
                 Action<FFileManifest> ac;
                 if (!_jsonGrouped)
                 {
@@ -698,7 +697,6 @@ namespace UEManifestReader
                 else
                 {
                     CreateLookUp(out Dictionary<string, string> hashesLookup, out Dictionary<string, string> datagroupLookup);
-
                     ac = (fileManifest) =>
                     {
                         _jsonWriter.WriteStartArray("FileChunkParts");
@@ -739,7 +737,6 @@ namespace UEManifestReader
             }
 
             Manifest.FileList = fFileManifest;
-
             if (_jsonWriter == null)
             {
                 return;
@@ -750,7 +747,6 @@ namespace UEManifestReader
             {
                 _jsonWriter.WriteStartObject();
                 FFileManifest fileManifest = fFileManifest[i];
-
                 for (int j = 0; j < _jsonAction.Count; j++)
                 {
                     _jsonAction[j](fileManifest);
@@ -764,14 +760,7 @@ namespace UEManifestReader
 
         private void ReadFCustomFields()
         {
-            uint dataSize = reader.ReadUInt(); // size of FCustomFields data
-            if (!_readerSettings.ShouldReadCustomFields)
-            {
-                reader.Position += dataSize - sizeof(uint);
-                return;
-            }
-
-            EChunkDataListVersion dataVersion = (EChunkDataListVersion)reader.ReadByte();
+            _ = /*(EChunkDataListVersion)*/reader.ReadByte();
             int elementCount = reader.ReadInt();
             string[] keys = reader.ReadArray(elementCount, () => reader.ReadFString());
             string[] values = reader.ReadArray(elementCount, () => reader.ReadFString());
@@ -779,6 +768,11 @@ namespace UEManifestReader
             for (int i = 0; i < elementCount; i++)
             {
                 Manifest.CustomFields.Add(keys[i], values[i]);
+            }
+
+            if (Manifest.CustomFields.TryGetValue("BaseUrl", out string urls))
+            {
+                Manifest.BaseUrls = urls.Split(',').ToList();
             }
 
             if (_jsonWriter == null)
@@ -819,7 +813,7 @@ namespace UEManifestReader
                 fixed (byte* pEHash = expectedHash, pHash = hash)
                 {
                     byte* eHash = pEHash, bHash = pHash;
-                    for (int i = 0; i < expectedHash.Length; i++)
+                    for (int i = 0; i < 20; i++)
                     {
                         if (*eHash++ != *bHash++)
                         {
@@ -869,10 +863,23 @@ namespace UEManifestReader
                     dgLookup.Add(chunkInfo.Guid, chunkInfo.GroupNumber);
                 }
             });
-            Task.WaitAll(hashLookup, datagroupLookup);
 
+            Task.WaitAll(hashLookup, datagroupLookup);
             hashesLookup = haLookup;
             datagroupsLookup = dgLookup;
+        }
+
+        private void ExecuteReadIfTrue(bool Read, Action toExecute)
+        {
+            uint dataSizeToSkip = reader.ReadUInt();
+            if (Read)
+            {
+                toExecute();
+            }
+            else
+            {
+                reader.Position += dataSizeToSkip - sizeof(uint);
+            }
         }
 
         private void Dispose(bool disposing)

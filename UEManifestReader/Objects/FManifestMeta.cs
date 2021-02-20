@@ -1,9 +1,9 @@
-﻿namespace UEManifestReader.Objects
-{
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
+namespace UEManifestReader.Objects
+{
     public class FManifestMeta
     {
         public FManifestMeta(Stream reader, bool includeBuildId)
@@ -15,7 +15,7 @@
             BuildVersion = reader.ReadFString();
             LaunchExe = reader.ReadFString();
             LaunchCommand = reader.ReadFString();
-            PrereqIds = reader.ReadTArray(() => reader.ReadFString()).ToList();
+            PrereqIds = reader.ReadTArray(reader.ReadFString).ToList();
             PrereqName = reader.ReadFString();
             PrereqPath = reader.ReadFString();
             PrereqArgs = reader.ReadFString();
@@ -26,7 +26,7 @@
         }
 
         /// <summary>
-        /// The feature level support this build was created with, regardless of the serialised format.
+        /// The feature level support this build was created with, regardless of the serialized format.
         /// </summary>
         public int ManifestVersion { get; }
 

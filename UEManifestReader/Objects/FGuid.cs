@@ -1,27 +1,27 @@
-﻿namespace UEManifestReader
-{
-    using System;
-    using System.IO;
-    using static global::UEManifestReader.Utilities;
+﻿using System;
+using System.IO;
+using static UEManifestReader.Utilities;
 
+namespace UEManifestReader
+{
     internal ref struct FGuid
     {
+        private readonly ArraySegment<byte> _a;
+
+        private readonly ArraySegment<byte> _b;
+
+        private readonly ArraySegment<byte> _c;
+
+        private readonly ArraySegment<byte> _d;
+
         internal FGuid(Stream stream)
         {
-            A = SwapBytesOrder(stream.ReadBytes(4));
-            B = SwapBytesOrder(stream.ReadBytes(4));
-            C = SwapBytesOrder(stream.ReadBytes(4));
-            D = SwapBytesOrder(stream.ReadBytes(4));
+            _a = SwapBytesOrder(stream.ReadBytes(4));
+            _b = SwapBytesOrder(stream.ReadBytes(4));
+            _c = SwapBytesOrder(stream.ReadBytes(4));
+            _d = SwapBytesOrder(stream.ReadBytes(4));
         }
 
-        private readonly ArraySegment<byte> A;
-
-        private readonly ArraySegment<byte> B;
-
-        private readonly ArraySegment<byte> C;
-
-        private readonly ArraySegment<byte> D;
-
-        public override string ToString() => $"{BytesToHexadecimalString(A)}{BytesToHexadecimalString(B)}{BytesToHexadecimalString(C)}{BytesToHexadecimalString(D)}";
+        public override string ToString() => $"{BytesToHexadecimalString(_a)}{BytesToHexadecimalString(_b)}{BytesToHexadecimalString(_c)}{BytesToHexadecimalString(_d)}";
     }
 }

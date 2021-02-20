@@ -1,9 +1,9 @@
-﻿namespace UEManifestReader.Objects
-{
-    using System.Collections.Generic;
-    using System.Linq;
-    using global::UEManifestReader.Enums;
+﻿using System.Collections.Generic;
+using System.Linq;
+using UEManifestReader.Enums;
 
+namespace UEManifestReader.Objects
+{
     public class FFileManifest
     {
         public FFileManifest(string fileName, string symLinkTarget, string fileHash, EFileMetaFlags? metaFlag, string[] installTags, FChunkPart[] chunkParts)
@@ -19,31 +19,31 @@
         /// <summary>
         /// The build relative filename.
         /// </summary>
-        public string Filename { get; internal set; }
+        public string Filename { get; }
 
         /// <summary>
         /// Whether this is a symlink to another file.
         /// </summary>
-        public string SymlinkTarget { get; internal set; }
+        public string SymlinkTarget { get; }
 
         /// <summary>
         /// The file SHA1.
         /// </summary>
-        public string FileHash { get; internal set; }
+        public string FileHash { get; }
 
         /// <summary>
         /// The flags for this file.
         /// </summary>
-        public EFileMetaFlags? FileMetaFlags { get; internal set; }
+        public EFileMetaFlags? FileMetaFlags { get;  }
 
         /// <summary>
         /// The install tags for this file.
         /// </summary>
-        public List<string> InstallTags { get; internal set; }
+        public List<string> InstallTags { get; }
 
         /// <summary>
         /// The list of chunk parts to stitch.
         /// </summary>
-        public List<FChunkPart> ChunkParts { get; internal set; }
+        public List<FChunkPart> ChunkParts { get; }
     }
 }

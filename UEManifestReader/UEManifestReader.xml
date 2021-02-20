@@ -6,7 +6,7 @@
     <members>
         <member name="F:UEManifestReader.Enums.EChunkSubdir.Undefined">
             <summary>
-            Only if <see cref="P:UEManifestReader.CustomManifestReadingSettings.ShouldReadManifestMeta"/> is <see langword="false"/>.
+            Only if <see cref="P:UEManifestReader.CustomManifestReadingSettings.ReadManifestMeta"/> is <see langword="false"/>.
             </summary>
         </member>
         <member name="F:UEManifestReader.Enums.EFileMetaFlags.None">
@@ -31,7 +31,7 @@
         </member>
         <member name="F:UEManifestReader.Enums.EFileSubdir.Undefined">
             <summary>
-            Only if <see cref="P:UEManifestReader.CustomManifestReadingSettings.ShouldReadManifestMeta"/> is <see langword="false"/>.
+            Only if <see cref="P:UEManifestReader.CustomManifestReadingSettings.ReadManifestMeta"/> is <see langword="false"/>.
             </summary>
         </member>
         <member name="T:UEManifestReader.JsonOutputFormatFlags">
@@ -104,6 +104,12 @@
             The file download size for this chunk.
             </summary>
         </member>
+        <member name="M:UEManifestReader.Objects.FChunkInfo.ToString">
+            <summary>
+            Returns the download path.
+            </summary>
+            <returns></returns>
+        </member>
         <member name="P:UEManifestReader.Objects.FChunkPart.Guid">
             <summary>
             The GUID of the chunk containing this part.
@@ -149,6 +155,11 @@
             The list of chunk parts to stitch.
             </summary>
         </member>
+        <member name="P:UEManifestReader.Objects.FManifest.BaseUrls">
+            <summary>
+            Base URLs for downloading chunks.
+            </summary>
+        </member>
         <member name="P:UEManifestReader.Objects.FManifest.ChunkSubdir">
             <summary>
             The chunks subdir.
@@ -181,7 +192,7 @@
         </member>
         <member name="P:UEManifestReader.Objects.FManifestMeta.ManifestVersion">
             <summary>
-            The feature level support this build was created with, regardless of the serialised format.
+            The feature level support this build was created with, regardless of the serialized format.
             </summary>
         </member>
         <member name="P:UEManifestReader.Objects.FManifestMeta.IsFileData">
@@ -239,31 +250,31 @@
             A unique build id generated at original chunking time to identify an exact build.
             </summary>
         </member>
-        <member name="M:UEManifestReader.UEManifestReader.#ctor(System.String)">
+        <member name="M:UEManifestReader.UESerializedManifestReader.#ctor(System.String)">
             <summary>
-            Initializes a new instance of the <see cref="T:UEManifestReader.UEManifestReader"/> class.
+            Initializes a new instance of the <see cref="N:UEManifestReader"/> class.
             </summary>
             <param name="file">Path to the file to read.</param>
         </member>
-        <member name="M:UEManifestReader.UEManifestReader.#ctor(System.String,UEManifestReader.CustomManifestReadingSettings)">
+        <member name="M:UEManifestReader.UESerializedManifestReader.#ctor(System.String,UEManifestReader.CustomManifestReadingSettings)">
             <summary>
-            Initializes a new instance of the <see cref="T:UEManifestReader.UEManifestReader"/> class.
+            Initializes a new instance of the <see cref="N:UEManifestReader"/> class.
             </summary>
             <param name="file">Path to the file to read.</param>
             <param name="readSettings">Manifest reading settings.</param>
         </member>
-        <member name="M:UEManifestReader.UEManifestReader.#ctor(System.String,UEManifestReader.CustomManifestReadingSettings,System.Boolean,System.String)">
+        <member name="M:UEManifestReader.UESerializedManifestReader.#ctor(System.String,UEManifestReader.CustomManifestReadingSettings,System.Boolean,System.String)">
             <summary>
-            Initializes a new instance of the <see cref="T:UEManifestReader.UEManifestReader"/> class.
+            Initializes a new instance of the <see cref="N:UEManifestReader"/> class.
             </summary>
             <param name="file">Path to the file to read.</param>
             <param name="readSettings">Manifest reading settings.</param>
             <param name="writeOutputToFileWhileReading">If <see langword="true"/>, output is gonna be written to file while the manifest file is being read using default json output format.</param>
             <param name="outputFileName">File name of the file to which the json output is written. Can be <see langword="null"/> if <paramref name="writeOutputToFileWhileReading"/> is <see langword="false"/>.</param>
         </member>
-        <member name="M:UEManifestReader.UEManifestReader.#ctor(System.String,UEManifestReader.CustomManifestReadingSettings,System.Boolean,System.String,UEManifestReader.JsonOutputFormatFlags)">
+        <member name="M:UEManifestReader.UESerializedManifestReader.#ctor(System.String,UEManifestReader.CustomManifestReadingSettings,System.Boolean,System.String,UEManifestReader.JsonOutputFormatFlags)">
             <summary>
-            Initializes a new instance of the <see cref="T:UEManifestReader.UEManifestReader"/> class.
+            Initializes a new instance of the <see cref="N:UEManifestReader"/> class.
             </summary>
             <param name="file">Path to the file to read.</param>
             <param name="readSettings">Manifest reading settings.</param>
@@ -271,32 +282,32 @@
             <param name="outputFileName">File name of the file to which the json output is written. Can be <see langword="null"/> if <paramref name="writeOutputToFileWhileReading"/> is <see langword="false"/>.</param>
             <param name="outputFormat">Json output format.</param>
         </member>
-        <member name="M:UEManifestReader.UEManifestReader.#ctor(System.Byte[])">
+        <member name="M:UEManifestReader.UESerializedManifestReader.#ctor(System.Byte[])">
             <summary>
-            Initializes a new instance of the <see cref="T:UEManifestReader.UEManifestReader"/> class.
+            Initializes a new instance of the <see cref="N:UEManifestReader"/> class.
             </summary>
             <param name="manifestData">Manifest content data.</param>
         </member>
-        <member name="M:UEManifestReader.UEManifestReader.#ctor(System.Byte[],System.Boolean,System.String)">
+        <member name="M:UEManifestReader.UESerializedManifestReader.#ctor(System.Byte[],System.Boolean,System.String)">
             <summary>
-            Initializes a new instance of the <see cref="T:UEManifestReader.UEManifestReader"/> class.
+            Initializes a new instance of the <see cref="N:UEManifestReader"/> class.
             </summary>
             <param name="manifestData">Manifest content data.</param>
             <param name="writeDataToTempFile">If <see langword="true"/>, write the manifest data to a file and read it from it, else read the content from memory.</param>
             <param name="fileName">Name of the file to write the data to. Can be <see langword="null"/> if <paramref name="writeDataToTempFile"/> is <see langword="false"/>.</param>
         </member>
-        <member name="M:UEManifestReader.UEManifestReader.#ctor(System.Byte[],System.Boolean,System.String,UEManifestReader.CustomManifestReadingSettings)">
+        <member name="M:UEManifestReader.UESerializedManifestReader.#ctor(System.Byte[],System.Boolean,System.String,UEManifestReader.CustomManifestReadingSettings)">
             <summary>
-            Initializes a new instance of the <see cref="T:UEManifestReader.UEManifestReader"/> class.
+            Initializes a new instance of the <see cref="N:UEManifestReader"/> class.
             </summary>
             <param name="manifestData">Manifest content data.</param>
             <param name="writeDataToTempFile">If <see langword="true"/>, write the manifest data to a file and read it from it, else read the content from memory.</param>
             <param name="fileName">Name of the file to write the data to. Can be <see langword="null"/> if <paramref name="writeDataToTempFile"/> is <see langword="false"/>.</param>
             <param name="readSettings">Manifest reading settings.</param>
         </member>
-        <member name="M:UEManifestReader.UEManifestReader.#ctor(System.Byte[],System.Boolean,System.String,UEManifestReader.CustomManifestReadingSettings,System.Boolean,System.String)">
+        <member name="M:UEManifestReader.UESerializedManifestReader.#ctor(System.Byte[],System.Boolean,System.String,UEManifestReader.CustomManifestReadingSettings,System.Boolean,System.String)">
             <summary>
-            Initializes a new instance of the <see cref="T:UEManifestReader.UEManifestReader"/> class.
+            Initializes a new instance of the <see cref="N:UEManifestReader"/> class.
             </summary>
             <param name="manifestData">Manifest content data.</param>
             <param name="writeDataToTempFile">If <see langword="true"/>, write the manifest data to a file and read it from it, else read the content from memory.</param>
@@ -305,9 +316,9 @@
             <param name="writeOutputToFileWhileReading">If <see langword="true"/>, output is gonna be written to file while the manifest file is being read using default json output format.</param>
             <param name="outputFileName">File name of the file to which the json output is written. Can be <see langword="null"/> if <paramref name="writeOutputToFileWhileReading"/> is <see langword="false"/>.</param>
         </member>
-        <member name="M:UEManifestReader.UEManifestReader.#ctor(System.Byte[],System.Boolean,System.String,UEManifestReader.CustomManifestReadingSettings,System.Boolean,System.String,UEManifestReader.JsonOutputFormatFlags)">
+        <member name="M:UEManifestReader.UESerializedManifestReader.#ctor(System.Byte[],System.Boolean,System.String,UEManifestReader.CustomManifestReadingSettings,System.Boolean,System.String,UEManifestReader.JsonOutputFormatFlags)">
             <summary>
-            Initializes a new instance of the <see cref="T:UEManifestReader.UEManifestReader"/> class.
+            Initializes a new instance of the <see cref="N:UEManifestReader"/> class.
             </summary>
             <param name="manifestData">Manifest content data.</param>
             <param name="writeDataToTempFile">If <see langword="true"/>, write the manifest data to a file and read it from it, else read the content from memory.</param>
@@ -317,79 +328,99 @@
             <param name="outputFileName">File name of the file to which the json output is written. Can be <see langword="null"/> if <paramref name="writeOutputToFileWhileReading"/> is <see langword="false"/>.</param>
             <param name="outputFormat">Json output format.</param>
         </member>
-        <member name="M:UEManifestReader.UEManifestReader.#ctor(System.IO.Stream)">
+        <member name="M:UEManifestReader.UESerializedManifestReader.#ctor(System.IO.Stream)">
             <summary>
-            Initializes a new instance of the <see cref="T:UEManifestReader.UEManifestReader"/> class.
+            Initializes a new instance of the <see cref="N:UEManifestReader"/> class.
             </summary>
             <param name="stream">The <see cref="T:System.IO.Stream"/> of the manifest content.</param>
         </member>
-        <member name="M:UEManifestReader.UEManifestReader.#ctor(System.IO.Stream,UEManifestReader.CustomManifestReadingSettings)">
+        <member name="M:UEManifestReader.UESerializedManifestReader.#ctor(System.IO.Stream,UEManifestReader.CustomManifestReadingSettings)">
             <summary>
-            Initializes a new instance of the <see cref="T:UEManifestReader.UEManifestReader"/> class.
-            </summary>
-            <param name="stream">The <see cref="T:System.IO.Stream"/> of the manifest content.</param>
-            <param name="readSettings">Manifest reading settings.</param>
-        </member>
-        <member name="M:UEManifestReader.UEManifestReader.#ctor(System.IO.Stream,UEManifestReader.CustomManifestReadingSettings,System.Boolean,System.String)">
-            <summary>
-            Initializes a new instance of the <see cref="T:UEManifestReader.UEManifestReader"/> class.
+            Initializes a new instance of the <see cref="N:UEManifestReader"/> class.
             </summary>
             <param name="stream">The <see cref="T:System.IO.Stream"/> of the manifest content.</param>
             <param name="readSettings">Manifest reading settings.</param>
-            <param name="writeOutputToFileWhileReading">If <see langword="true"/>, output is gonna be written to file while the manifest file is being read using default json output format.</param>
-            <param name="outputFileName">File name of the file to which the json output is written. Can be <see langword="null"/> if <paramref name="writeOutputToFileWhileReading"/> is <see langword="false"/>.</param>
         </member>
-        <member name="M:UEManifestReader.UEManifestReader.#ctor(System.IO.Stream,UEManifestReader.CustomManifestReadingSettings,System.Boolean,System.String,UEManifestReader.JsonOutputFormatFlags)">
+        <member name="M:UEManifestReader.UESerializedManifestReader.#ctor(System.IO.Stream,UEManifestReader.CustomManifestReadingSettings,System.Boolean,System.String)">
             <summary>
-            Initializes a new instance of the <see cref="T:UEManifestReader.UEManifestReader"/> class.
+            Initializes a new instance of the <see cref="N:UEManifestReader"/> class.
             </summary>
             <param name="stream">The <see cref="T:System.IO.Stream"/> of the manifest content.</param>
             <param name="readSettings">Manifest reading settings.</param>
             <param name="writeOutputToFileWhileReading">If <see langword="true"/>, output is gonna be written to file while the manifest file is being read using default json output format.</param>
             <param name="outputFileName">File name of the file to which the json output is written. Can be <see langword="null"/> if <paramref name="writeOutputToFileWhileReading"/> is <see langword="false"/>.</param>
-            <param name="outputFormat">Json output format.</param>
         </member>
-        <member name="M:UEManifestReader.UEManifestReader.#ctor(System.Uri,UEManifestReader.ManifestStorage,System.String)">
+        <member name="M:UEManifestReader.UESerializedManifestReader.#ctor(System.IO.Stream,UEManifestReader.CustomManifestReadingSettings,System.Boolean,System.String,UEManifestReader.JsonOutputFormatFlags)">
             <summary>
-            Downloads the manifest data from the specified <paramref name="manifestUrl"/> and initializes a new instance of the <see cref="T:UEManifestReader.UEManifestReader"/> class.
+            Initializes a new instance of the <see cref="N:UEManifestReader"/> class.
             </summary>
-            <param name="manifestUrl">The Url of the manifest file to download.</param>
-            <param name="manifestStorage">The location where to save the download manifest.</param>
-            <param name="fileName">Name of the file to write the data to. Can be <see langword="null"/> if <paramref name="manifestStorage"/> is <see cref="F:UEManifestReader.ManifestStorage.Memory"/>.</param>
-        </member>
-        <member name="M:UEManifestReader.UEManifestReader.#ctor(System.Uri,UEManifestReader.ManifestStorage,System.String,UEManifestReader.CustomManifestReadingSettings)">
-            <summary>
-            Downloads the manifest data from the specified <paramref name="manifestUrl"/> and initializes a new instance of the <see cref="T:UEManifestReader.UEManifestReader"/> class.
-            </summary>
-            <param name="manifestUrl">The Url of the manifest file to download.</param>
-            <param name="manifestStorage">The location where to save the download manifest.</param>
-            <param name="fileName">Name of the file to write the data to. Can be <see langword="null"/> if <paramref name="manifestStorage"/> is <see cref="F:UEManifestReader.ManifestStorage.Memory"/>.</param>
-            <param name="readSettings">Manifest reading settings.</param>
-        </member>
-        <member name="M:UEManifestReader.UEManifestReader.#ctor(System.Uri,UEManifestReader.ManifestStorage,System.String,UEManifestReader.CustomManifestReadingSettings,System.Boolean,System.String)">
-            <summary>
-            Downloads the manifest data from the specified <paramref name="manifestUrl"/> and initializes a new instance of the <see cref="T:UEManifestReader.UEManifestReader"/> class.
-            </summary>
-            <param name="manifestUrl">The Url of the manifest file to download.</param>
-            <param name="manifestStorage">The location where to save the download manifest.</param>
-            <param name="fileName">Name of the file to write the data to. Can be <see langword="null"/> if <paramref name="manifestStorage"/> is <see cref="F:UEManifestReader.ManifestStorage.Memory"/>.</param>
-            <param name="readSettings">Manifest reading settings.</param>
-            <param name="writeOutputToFileWhileReading">If <see langword="true"/>, output is gonna be written to file while the manifest file is being read using default json output format.</param>
-            <param name="outputFileName">File name of the file to which the json output is written. Can be <see langword="null"/> if <paramref name="writeOutputToFileWhileReading"/> is <see langword="false"/>.</param>
-        </member>
-        <member name="M:UEManifestReader.UEManifestReader.#ctor(System.Uri,UEManifestReader.ManifestStorage,System.String,UEManifestReader.CustomManifestReadingSettings,System.Boolean,System.String,UEManifestReader.JsonOutputFormatFlags)">
-            <summary>
-            Downloads the manifest data from the specified <paramref name="manifestUrl"/> and initializes a new instance of the <see cref="T:UEManifestReader.UEManifestReader"/> class.
-            </summary>
-            <param name="manifestUrl">The Url of the manifest file to download.</param>
-            <param name="manifestStorage">The location where to save the download manifest.</param>
-            <param name="fileName">Name of the file to write the data to. Can be <see langword="null"/> if <paramref name="manifestStorage"/> is <see cref="F:UEManifestReader.ManifestStorage.Memory"/>.</param>
+            <param name="stream">The <see cref="T:System.IO.Stream"/> of the manifest content.</param>
             <param name="readSettings">Manifest reading settings.</param>
             <param name="writeOutputToFileWhileReading">If <see langword="true"/>, output is gonna be written to file while the manifest file is being read using default json output format.</param>
             <param name="outputFileName">File name of the file to which the json output is written. Can be <see langword="null"/> if <paramref name="writeOutputToFileWhileReading"/> is <see langword="false"/>.</param>
             <param name="outputFormat">Json output format.</param>
         </member>
-        <member name="M:UEManifestReader.UEManifestReader.ReadManifest(UEManifestReader.ManifestStorage)">
+        <member name="M:UEManifestReader.UESerializedManifestReader.#ctor(System.Uri,UEManifestReader.ManifestStorage,System.String)">
+            <summary>
+            Downloads the manifest data from the specified <paramref name="manifestUrl"/> and initializes a new instance of the <see cref="N:UEManifestReader"/> class.
+            </summary>
+            <param name="manifestUrl">The Url of the manifest file to download.</param>
+            <param name="manifestStorage">The location where to save the download manifest.</param>
+            <param name="fileName">Name of the file to write the data to. Can be <see langword="null"/> if <paramref name="manifestStorage"/> is <see cref="F:UEManifestReader.ManifestStorage.Memory"/>.</param>
+        </member>
+        <member name="M:UEManifestReader.UESerializedManifestReader.#ctor(System.Uri,UEManifestReader.ManifestStorage,System.String,UEManifestReader.CustomManifestReadingSettings)">
+            <summary>
+            Downloads the manifest data from the specified <paramref name="manifestUrl"/> and initializes a new instance of the <see cref="N:UEManifestReader"/> class.
+            </summary>
+            <param name="manifestUrl">The Url of the manifest file to download.</param>
+            <param name="manifestStorage">The location where to save the download manifest.</param>
+            <param name="fileName">Name of the file to write the data to. Can be <see langword="null"/> if <paramref name="manifestStorage"/> is <see cref="F:UEManifestReader.ManifestStorage.Memory"/>.</param>
+            <param name="readSettings">Manifest reading settings.</param>
+        </member>
+        <member name="M:UEManifestReader.UESerializedManifestReader.#ctor(System.Uri,UEManifestReader.ManifestStorage,System.String,UEManifestReader.CustomManifestReadingSettings,System.Boolean,System.String)">
+            <summary>
+            Downloads the manifest data from the specified <paramref name="manifestUrl"/> and initializes a new instance of the <see cref="N:UEManifestReader"/> class.
+            </summary>
+            <param name="manifestUrl">The Url of the manifest file to download.</param>
+            <param name="manifestStorage">The location where to save the download manifest.</param>
+            <param name="fileName">Name of the file to write the data to. Can be <see langword="null"/> if <paramref name="manifestStorage"/> is <see cref="F:UEManifestReader.ManifestStorage.Memory"/>.</param>
+            <param name="readSettings">Manifest reading settings.</param>
+            <param name="writeOutputToFileWhileReading">If <see langword="true"/>, output is gonna be written to file while the manifest file is being read using default json output format.</param>
+            <param name="outputFileName">File name of the file to which the json output is written. Can be <see langword="null"/> if <paramref name="writeOutputToFileWhileReading"/> is <see langword="false"/>.</param>
+        </member>
+        <member name="M:UEManifestReader.UESerializedManifestReader.#ctor(System.Uri,UEManifestReader.ManifestStorage,System.String,UEManifestReader.CustomManifestReadingSettings,System.Boolean,System.String,UEManifestReader.JsonOutputFormatFlags)">
+            <summary>
+            Downloads the manifest data from the specified <paramref name="manifestUrl"/> and initializes a new instance of the <see cref="N:UEManifestReader"/> class.
+            </summary>
+            <param name="manifestUrl">The Url of the manifest file to download.</param>
+            <param name="manifestStorage">The location where to save the download manifest.</param>
+            <param name="fileName">Name of the file to write the data to. Can be <see langword="null"/> if <paramref name="manifestStorage"/> is <see cref="F:UEManifestReader.ManifestStorage.Memory"/>.</param>
+            <param name="readSettings">Manifest reading settings.</param>
+            <param name="writeOutputToFileWhileReading">If <see langword="true"/>, output is gonna be written to file while the manifest file is being read using default json output format.</param>
+            <param name="outputFileName">File name of the file to which the json output is written. Can be <see langword="null"/> if <paramref name="writeOutputToFileWhileReading"/> is <see langword="false"/>.</param>
+            <param name="outputFormat">Json output format.</param>
+        </member>
+        <member name="P:UEManifestReader.UESerializedManifestReader.Manifest">
+            <summary>
+            Parsed manifest.
+            </summary>
+        </member>
+        <member name="P:UEManifestReader.UESerializedManifestReader.ReadingSettings">
+            <summary>
+            Manifest reading settings.
+            </summary>
+        </member>
+        <member name="P:UEManifestReader.UESerializedManifestReader.WriteOutputToFile">
+            <summary>
+            If <see langword="true"/>, writes parsed manifest to file.
+            </summary>
+        </member>
+        <member name="P:UEManifestReader.UESerializedManifestReader.OutputFormat">
+            <summary>
+            Json output format.
+            </summary>
+        </member>
+        <member name="M:UEManifestReader.UESerializedManifestReader.ReadManifest(UEManifestReader.ManifestStorage)">
             <summary>
             Read the manifest.
             </summary>
