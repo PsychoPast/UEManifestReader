@@ -813,7 +813,7 @@ namespace UEManifestReader
                 fixed (byte* pEHash = expectedHash, pHash = hash)
                 {
                     byte* eHash = pEHash, bHash = pHash;
-                    for (int i = 0; i < 20; i++)
+                    for (int i = 0; i < expectedHash.Length; i++)
                     {
                         if (*eHash++ != *bHash++)
                         {
@@ -869,10 +869,10 @@ namespace UEManifestReader
             datagroupsLookup = dgLookup;
         }
 
-        private void ExecuteReadIfTrue(bool Read, Action toExecute)
+        private void ExecuteReadIfTrue(bool shouldRead, Action toExecute)
         {
             uint dataSizeToSkip = reader.ReadUInt();
-            if (Read)
+            if (shouldRead)
             {
                 toExecute();
             }
