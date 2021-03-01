@@ -1,12 +1,12 @@
 # UEManifestReader
- Library to read and parse Unreal Engine manifest and delta files.
+ Library to read and parse Unreal Engine 4 manifest and delta files.
 
  ## Features:
- 1. Read and parse a **raw serialied** (json format is NOT supported) manifest from a file (.manifest | .delta *usually*), a byte array, a stream or an Uri.
- 2. Choose wether to write the output json formatted or no. (more details in the library XML documentation) 
- 3. Decent execution time (between 600-800 ms). **Not writing the output to file makes the execution faster.**
- 4. Choose how to format is json output.
- 5. Choose which fields to read and which to skip. **The less fields there is, the faster is the execution and the lesser is the memory footprint.**
+ 1. Read and parse a **raw serialized** (json format is NOT supported) manifest from a file (.manifest | .delta *usually*), a byte array, a stream or an Uri.
+ 2. Choose whether to write the output in a specific json format or keep it simple. (more details in the library XML documentation) 
+ 3. Decent execution time (between 400-800 ms). **Not writing the output to file makes the execution faster.**
+ 4. Choose how to format the json output (indented or not)
+ 5. Choose which fields to read and which to skip. **The less fields, the faster the execution.**
 
 |                | Meaning | Required for chunk downloading|
 |----------------|---------|-------------------------------|
