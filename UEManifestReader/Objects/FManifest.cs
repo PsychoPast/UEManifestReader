@@ -3,7 +3,7 @@ using UEManifestReader.Enums;
 
 namespace UEManifestReader.Objects
 {
-    public class FManifest
+    public sealed class FManifest
     {
         /// <summary>
         /// Base URLs for downloading chunks.

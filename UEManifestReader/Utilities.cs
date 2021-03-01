@@ -34,10 +34,22 @@ namespace UEManifestReader
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static TOutput ReinterpretCast<TOutput>(nint ptr)
+            where TOutput : unmanaged
+        {
+            if (ptr == IntPtr.Zero)
+            {
+                throw new ArgumentNullException(nameof(ptr));
+            }
+
+            return *(TOutput*)ptr;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static string ULongToHexHash(ulong value)
         {
             Span<byte> buffer = stackalloc byte[sizeof(ulong)];
-            buffer[0] = (byte)(value >> 56);  
+            buffer[0] = (byte)(value >> 56);
             buffer[1] = (byte)(value >> 48);
             buffer[2] = (byte)(value >> 40);
             buffer[3] = (byte)(value >> 32);
@@ -54,12 +66,6 @@ namespace UEManifestReader
             return BytesToHexadecimalString(buffer);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static char GetHexCharFromByte(byte rawByte)
-            => (char)(rawByte > 9 ?
-                          rawByte - 10 + 'A' :
-                          rawByte + '0');
-
         private static void ToHexadecimalString(int length, char* buffer, byte* pByte)
         {
             byte rawByte;
@@ -71,5 +77,11 @@ namespace UEManifestReader
                 *buffer++ = GetHexCharFromByte(rawByte);
             }
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static char GetHexCharFromByte(byte rawByte)
+            => (char)(rawByte > 9 ?
+                          rawByte - 10 + 'A' :
+                          rawByte + '0');
     }
 }

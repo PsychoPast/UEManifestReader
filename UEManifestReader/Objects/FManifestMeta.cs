@@ -1,14 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using UEManifestReader.Enums;
 
 namespace UEManifestReader.Objects
 {
-    public class FManifestMeta
+    public sealed class FManifestMeta
     {
-        public FManifestMeta(Stream reader, bool includeBuildId)
+        internal FManifestMeta(Stream reader, bool includeBuildId)
         {
-            ManifestVersion = reader.ReadInt();
+            int version = reader.ReadInt();
+            ManifestVersion = version;
+            ManifestFeatureLevel = (EFeatureLevel)version;
             IsFileData = reader.ReadBool();
             AppId = reader.ReadUInt();
             AppName = reader.ReadFString();
@@ -26,9 +29,14 @@ namespace UEManifestReader.Objects
         }
 
         /// <summary>
-        /// The feature level support this build was created with, regardless of the serialized format.
+        /// Manifest version. 
         /// </summary>
         public int ManifestVersion { get; }
+
+        /// <summary>
+        /// The feature level support this build was created with, regardless of the serialized format.
+        /// </summary>
+        public EFeatureLevel ManifestFeatureLevel { get; }
 
         /// <summary>
         /// Whether this is a legacy 'nochunks' build.

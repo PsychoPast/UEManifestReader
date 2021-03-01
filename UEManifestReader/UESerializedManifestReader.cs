@@ -323,6 +323,16 @@ namespace UEManifestReader
                 _jsonWriter.WriteEndObject();
                 _jsonWriter.Flush();
             }
+
+            if (File.Exists(tempFileName))
+            {
+                File.Delete(tempFileName);
+            }
+
+            if (File.Exists(_tempFileBuffer))
+            {
+                File.Delete(_tempFileBuffer);
+            }
         }
 
         private void ReadFManifestHeader(ManifestStorage tempManifestDataStorage)
@@ -891,18 +901,9 @@ namespace UEManifestReader
                     _jsonWriter?.Dispose();
                     reader.Dispose();
                     fileHandle?.Close();
-                    if (File.Exists(tempFileName))
-                    {
-                        File.Delete(tempFileName);
-                    }
-
-                    if (File.Exists(_tempFileBuffer))
-                    {
-                        File.Delete(_tempFileBuffer);
-                    }
                 }
 
-                disposed = true;
+                disposed = !disposed;
             }
         }
 

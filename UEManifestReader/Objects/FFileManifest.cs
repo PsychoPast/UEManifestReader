@@ -4,9 +4,9 @@ using UEManifestReader.Enums;
 
 namespace UEManifestReader.Objects
 {
-    public class FFileManifest
+    public sealed class FFileManifest
     {
-        public FFileManifest(string fileName, string symLinkTarget, string fileHash, EFileMetaFlags? metaFlag, string[] installTags, FChunkPart[] chunkParts)
+        internal FFileManifest(string fileName, string symLinkTarget, string fileHash, EFileMetaFlags? metaFlag, string[] installTags, FChunkPart[] chunkParts)
         {
             Filename = fileName;
             SymlinkTarget = symLinkTarget;
@@ -34,7 +34,7 @@ namespace UEManifestReader.Objects
         /// <summary>
         /// The flags for this file.
         /// </summary>
-        public EFileMetaFlags? FileMetaFlags { get;  }
+        public EFileMetaFlags? FileMetaFlags { get; }
 
         /// <summary>
         /// The install tags for this file.

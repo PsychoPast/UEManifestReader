@@ -5,6 +5,14 @@ namespace UEManifestReader.Objects
 {
     public readonly struct FChunkPart : IEquatable<FChunkPart>
     {
+        internal FChunkPart(Stream reader)
+        {
+            reader.ReadUInt(); // dataSize
+            Guid = new FGuid(reader).ToString();
+            Offset = reader.ReadUInt();
+            Size = reader.ReadUInt();
+        }
+
         /// <summary>
         /// The GUID of the chunk containing this part.
         /// </summary>
@@ -19,14 +27,6 @@ namespace UEManifestReader.Objects
         /// The size of this part.
         /// </summary>
         public uint Size { get; }
-
-        public FChunkPart(Stream reader)
-        {
-            reader.ReadUInt(); // dataSize
-            Guid = new FGuid(reader).ToString();
-            Offset = reader.ReadUInt();
-            Size = reader.ReadUInt();
-        }
 
         public static bool operator ==(FChunkPart left, FChunkPart right) => left.Guid == right.Guid;
 

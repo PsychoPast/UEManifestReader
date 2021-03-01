@@ -9,10 +9,10 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Copyright>Copyright © 2020 PsychoPast</Copyright>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <Version>1.0.3</Version>
-    <AssemblyVersion>1.0.3</AssemblyVersion>
-    <FileVersion>1.0.3</FileVersion>
-    <Description>Library to read and parse Unreal Engine manifest and delta files.</Description>
+    <Version>1.0.4</Version>
+    <AssemblyVersion>1.0.4</AssemblyVersion>
+    <FileVersion>1.0.4</FileVersion>
+    <Description>Library to read and parse Unreal Engine 4 serialized manifests and deltas.</Description>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

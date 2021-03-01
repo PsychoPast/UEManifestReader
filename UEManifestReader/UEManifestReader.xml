@@ -9,6 +9,131 @@
             Only if <see cref="P:UEManifestReader.CustomManifestReadingSettings.ReadManifestMeta"/> is <see langword="false"/>.
             </summary>
         </member>
+        <member name="F:UEManifestReader.Enums.EFeatureLevel.Original">
+            <summary>
+             The original version.
+            </summary>
+        </member>
+        <member name="F:UEManifestReader.Enums.EFeatureLevel.CustomFields">
+            <summary>
+             Support for custom fields.
+            </summary>
+        </member>
+        <member name="F:UEManifestReader.Enums.EFeatureLevel.StartStoringVersion">
+            <summary>
+            Started storing the version number.
+            </summary>
+        </member>
+        <member name="F:UEManifestReader.Enums.EFeatureLevel.DataFileRenames">
+            <summary>
+            Made after data files where renamed to include the hash value, these chunks now go to ChunksV2.
+            </summary>
+        </member>
+        <member name="F:UEManifestReader.Enums.EFeatureLevel.StoresIfChunkOrFileData">
+            <summary>
+            Manifest stores whether build was constructed with chunk or file data.
+            </summary>
+        </member>
+        <member name="F:UEManifestReader.Enums.EFeatureLevel.StoresDataGroupNumbers">
+            <summary>
+            Manifest stores group number for each chunk/file data for reference so that external readers don't need to know how to calculate them.
+            </summary>
+        </member>
+        <member name="F:UEManifestReader.Enums.EFeatureLevel.ChunkCompressionSupport">
+            <summary>
+             Added support for chunk compression, these chunks now go to ChunksV3. NB: Not File Data Compression yet.
+            </summary>
+        </member>
+        <member name="F:UEManifestReader.Enums.EFeatureLevel.StoresPrerequisitesInfo">
+            <summary>
+             Manifest stores product prerequisites info.
+            </summary>
+        </member>
+        <member name="F:UEManifestReader.Enums.EFeatureLevel.StoresChunkFileSizes">
+            <summary>
+             Manifest stores chunk download sizes.
+            </summary>
+        </member>
+        <member name="F:UEManifestReader.Enums.EFeatureLevel.StoredAsCompressedUClass">
+            <summary>
+            Manifest can optionally be stored using UObject serialization and compressed.
+            </summary>
+        </member>
+        <member name="F:UEManifestReader.Enums.EFeatureLevel.UNUSED_0">
+            <summary>
+             This feature was removed and never used.
+            </summary>
+        </member>
+        <member name="F:UEManifestReader.Enums.EFeatureLevel.UNUSED_1">
+            <summary>
+             This feature was removed and never used.
+            </summary>
+        </member>
+        <member name="F:UEManifestReader.Enums.EFeatureLevel.StoresChunkDataShaHashes">
+            <summary>
+            Manifest stores chunk data SHA1 hash to use in place of data compare, for faster generation.
+            </summary>
+        </member>
+        <member name="F:UEManifestReader.Enums.EFeatureLevel.StoresPrerequisiteIds">
+            <summary>
+             Manifest stores Prerequisite Ids.
+            </summary>
+        </member>
+        <member name="F:UEManifestReader.Enums.EFeatureLevel.StoredAsBinaryData">
+            <summary>
+             The first minimal binary format was added. UObject classes will no longer be saved out when binary selected.
+            </summary>
+        </member>
+        <member name="F:UEManifestReader.Enums.EFeatureLevel.VariableSizeChunksWithoutWindowSizeChunkInfo">
+            <summary>
+             Temporary level where manifest can reference chunks with dynamic window size, but did not serialize them. Chunks from here onwards are stored in ChunksV4.
+            </summary>
+        </member>
+        <member name="F:UEManifestReader.Enums.EFeatureLevel.VariableSizeChunks">
+            <summary>
+             Manifest can reference chunks with dynamic window size, and also serializes them.
+            </summary>
+        </member>
+        <member name="F:UEManifestReader.Enums.EFeatureLevel.UsesRuntimeGeneratedBuildId">
+            <summary>
+             Manifest uses a build id generated from its metadata.
+            </summary>
+        </member>
+        <member name="F:UEManifestReader.Enums.EFeatureLevel.UsesBuildTimeGeneratedBuildId">
+            <summary>
+             Manifest uses a build id generated unique at build time, and stored in manifest.
+            </summary>
+        </member>
+        <member name="F:UEManifestReader.Enums.EFeatureLevel.Latest">
+            <summary>
+            Latest version.
+            </summary>
+        </member>
+        <member name="F:UEManifestReader.Enums.EFeatureLevel.LatestNoChunks">
+            <summary>
+            An alias to provide the latest version of a manifest supported by file data (nochunks).
+            </summary>
+        </member>
+        <member name="F:UEManifestReader.Enums.EFeatureLevel.LatestJson">
+            <summary>
+             An alias to provide the latest version of a manifest supported by a json serialized format.
+            </summary>
+        </member>
+        <member name="F:UEManifestReader.Enums.EFeatureLevel.FirstOptimisedDelta">
+            <summary>
+             An alias to provide the first available version of optimised delta manifest saving.
+            </summary>
+        </member>
+        <member name="F:UEManifestReader.Enums.EFeatureLevel.StoresUniqueBuildId">
+            <summary>
+             More aliases, but this time for values that have been renamed
+            </summary>
+        </member>
+        <member name="F:UEManifestReader.Enums.EFeatureLevel.Invalid">
+            <summary>
+            UObject default, so that we always serialize it.
+            </summary>
+        </member>
         <member name="F:UEManifestReader.Enums.EFileMetaFlags.None">
             <summary>
             Flag for none.
@@ -106,7 +231,7 @@
         </member>
         <member name="M:UEManifestReader.Objects.FChunkInfo.ToString">
             <summary>
-            Returns the download path.
+            Returns the chunk download path.
             </summary>
             <returns></returns>
         </member>
@@ -191,6 +316,11 @@
             </summary>
         </member>
         <member name="P:UEManifestReader.Objects.FManifestMeta.ManifestVersion">
+            <summary>
+            Manifest version. 
+            </summary>
+        </member>
+        <member name="P:UEManifestReader.Objects.FManifestMeta.ManifestFeatureLevel">
             <summary>
             The feature level support this build was created with, regardless of the serialized format.
             </summary>

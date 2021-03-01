@@ -1,9 +1,19 @@
-﻿namespace UEManifestReader.Objects
-{
-    using System;
+﻿using System;
 
+namespace UEManifestReader.Objects
+{
     public readonly struct FChunkInfo : IEquatable<FChunkInfo>
     {
+        internal FChunkInfo(string guid, string hash, string shaHash, string grpNum, uint? windowSize, long? fileSize)
+        {
+            Guid = guid;
+            Hash = hash;
+            ShaHash = shaHash;
+            GroupNumber = grpNum;
+            WindowSize = windowSize;
+            FileSize = fileSize;
+        }
+
         /// <summary>
         /// The GUID for this data.
         /// </summary>
@@ -34,16 +44,6 @@
         /// </summary>
         public long? FileSize { get; }
 
-        public FChunkInfo(string guid, string hash, string shaHash, string grpNum, uint? windowSize, long? fileSize)
-        {
-            Guid = guid;
-            Hash = hash;
-            ShaHash = shaHash;
-            GroupNumber = grpNum;
-            WindowSize = windowSize;
-            FileSize = fileSize;
-        }
-
         public static bool operator ==(FChunkInfo left, FChunkInfo right) => left.Guid == right.Guid;
 
         public static bool operator !=(FChunkInfo left, FChunkInfo right) => left.Guid != right.Guid;
@@ -53,7 +53,7 @@
         public override int GetHashCode() => HashCode.Combine(Guid, Hash);
 
         /// <summary>
-        /// Returns the download path.
+        /// Returns the chunk download path.
         /// </summary>
         /// <returns></returns>
         public override string ToString() => $"{GroupNumber}/{Hash}_{Guid}.chunk";

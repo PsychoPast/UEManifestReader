@@ -1,4 +1,4 @@
-﻿using global::UEManifestReader.Objects;
+﻿using UEManifestReader.Objects;
 
 namespace UEManifestReader
 {

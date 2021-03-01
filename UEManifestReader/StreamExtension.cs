@@ -108,7 +108,7 @@ namespace UEManifestReader
                 byteAlloc[i] = (byte)stream.ReadByte();
             }
 
-            return *(T*)byteAlloc;
+            return Utilities.ReinterpretCast<T>((IntPtr)byteAlloc);
         }
     }
 }
