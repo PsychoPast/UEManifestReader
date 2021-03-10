@@ -23,6 +23,7 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DocumentationFile>C:\Users\Christopher\Desktop\Visual Studio\UEManifestReader\UEManifestReader\UEManifestReader.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
