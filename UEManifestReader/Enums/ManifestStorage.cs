@@ -1,17 +1,17 @@
-﻿namespace UEManifestReader
+﻿namespace UEManifestReader.Enums
 {
     /// <summary>
-    /// Location where to save the manifest data.
+    /// Location where to save the temporary manifest data in case of download, decryption or decompression.
     /// </summary>
     public enum ManifestStorage
     {
         /// <summary>
-        /// Save the manifest content in memory.
+        /// Saves the manifest content in memory.
         /// </summary>
         Memory,
 
         /// <summary>
-        /// Save the manifest content on the disk.
+        /// Saves the manifest content on the disk.
         /// </summary>
         Disk
     }

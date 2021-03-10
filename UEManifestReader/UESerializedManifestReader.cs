@@ -5,7 +5,6 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using System.Threading.Tasks;
 using UEManifestReader.Enums;
 using UEManifestReader.Exceptions;
 using UEManifestReader.Objects;
@@ -17,16 +16,16 @@ namespace UEManifestReader
     public sealed class UESerializedManifestReader : IManifestReader, IDisposable
     {
         private const uint ManifestHeaderMagic = 0x44BEC00C;
-        private readonly CustomManifestReadingSettings _readerSettings;
+        private readonly CustomManifestReadSettings _readerSettings;
         private readonly Utf8JsonWriter _jsonWriter;
         private readonly bool _jsonGrouped;
         private readonly bool _jsonSimplified;
         private readonly string _tempFileBuffer;
         private readonly List<Action<FFileManifest>> _jsonAction;
-        private string tempFileName;
-        private Stream reader;
-        private FileStream fileHandle;
-        private bool disposed;
+        private string _tempFileName;
+        private Stream _reader;
+        private FileStream _fileHandle;
+        private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UEManifestReader"/> class.
@@ -42,7 +41,7 @@ namespace UEManifestReader
         /// </summary>
         /// <param name="file">Path to the file to read.</param>
         /// <param name="readSettings">Manifest reading settings.</param>
-        public UESerializedManifestReader(string file, CustomManifestReadingSettings readSettings)
+        public UESerializedManifestReader(string file, CustomManifestReadSettings readSettings)
             : this(file, readSettings, false, null)
         {
         }
@@ -54,7 +53,7 @@ namespace UEManifestReader
         /// <param name="readSettings">Manifest reading settings.</param>
         /// <param name="writeOutputToFileWhileReading">If <see langword="true"/>, output is gonna be written to file while the manifest file is being read using default json output format.</param>
         /// <param name="outputFileName">File name of the file to which the json output is written. Can be <see langword="null"/> if <paramref name="writeOutputToFileWhileReading"/> is <see langword="false"/>.</param>
-        public UESerializedManifestReader(string file, CustomManifestReadingSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName)
+        public UESerializedManifestReader(string file, CustomManifestReadSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName)
             : this(file, readSettings, writeOutputToFileWhileReading, outputFileName, JsonOutputFormatFlags.Default)
         {
         }
@@ -67,7 +66,7 @@ namespace UEManifestReader
         /// <param name="writeOutputToFileWhileReading">If <see langword="true"/>, output is gonna be written to file while the manifest file is being read using default json output format.</param>
         /// <param name="outputFileName">File name of the file to which the json output is written. Can be <see langword="null"/> if <paramref name="writeOutputToFileWhileReading"/> is <see langword="false"/>.</param>
         /// <param name="outputFormat">Json output format.</param>
-        public UESerializedManifestReader(string file, CustomManifestReadingSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName, JsonOutputFormatFlags outputFormat)
+        public UESerializedManifestReader(string file, CustomManifestReadSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName, JsonOutputFormatFlags outputFormat)
             : this(readSettings, writeOutputToFileWhileReading, outputFileName, outputFormat)
         {
             if (!File.Exists(file))
@@ -75,8 +74,8 @@ namespace UEManifestReader
                 throw new FileNotFoundException();
             }
 
-            fileHandle = File.OpenRead(file);
-            reader = new BufferedStream(fileHandle);
+            _fileHandle = File.OpenRead(file);
+            _reader = new BufferedStream(_fileHandle);
         }
 
         /// <summary>
@@ -106,7 +105,7 @@ namespace UEManifestReader
         /// <param name="writeDataToTempFile">If <see langword="true"/>, write the manifest data to a file and read it from it, else read the content from memory.</param>
         /// <param name="fileName">Name of the file to write the data to. Can be <see langword="null"/> if <paramref name="writeDataToTempFile"/> is <see langword="false"/>.</param>
         /// <param name="readSettings">Manifest reading settings.</param>
-        public UESerializedManifestReader(byte[] manifestData, bool writeDataToTempFile, string fileName, CustomManifestReadingSettings readSettings)
+        public UESerializedManifestReader(byte[] manifestData, bool writeDataToTempFile, string fileName, CustomManifestReadSettings readSettings)
             : this(manifestData, writeDataToTempFile, fileName, readSettings, false, null)
         {
         }
@@ -120,7 +119,7 @@ namespace UEManifestReader
         /// <param name="readSettings">Manifest reading settings.</param>
         /// <param name="writeOutputToFileWhileReading">If <see langword="true"/>, output is gonna be written to file while the manifest file is being read using default json output format.</param>
         /// <param name="outputFileName">File name of the file to which the json output is written. Can be <see langword="null"/> if <paramref name="writeOutputToFileWhileReading"/> is <see langword="false"/>.</param>
-        public UESerializedManifestReader(byte[] manifestData, bool writeDataToTempFile, string fileName, CustomManifestReadingSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName)
+        public UESerializedManifestReader(byte[] manifestData, bool writeDataToTempFile, string fileName, CustomManifestReadSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName)
             : this(manifestData, writeDataToTempFile, fileName, readSettings, writeOutputToFileWhileReading, outputFileName, JsonOutputFormatFlags.Default)
         {
         }
@@ -135,18 +134,18 @@ namespace UEManifestReader
         /// <param name="writeOutputToFileWhileReading">If <see langword="true"/>, output is gonna be written to file while the manifest file is being read using default json output format.</param>
         /// <param name="outputFileName">File name of the file to which the json output is written. Can be <see langword="null"/> if <paramref name="writeOutputToFileWhileReading"/> is <see langword="false"/>.</param>
         /// <param name="outputFormat">Json output format.</param>
-        public UESerializedManifestReader(byte[] manifestData, bool writeDataToTempFile, string fileName, CustomManifestReadingSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName, JsonOutputFormatFlags outputFormat)
+        public UESerializedManifestReader(byte[] manifestData, bool writeDataToTempFile, string fileName, CustomManifestReadSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName, JsonOutputFormatFlags outputFormat)
             : this(readSettings, writeOutputToFileWhileReading, outputFileName, outputFormat)
         {
             if (writeDataToTempFile)
             {
                 File.WriteAllBytes(fileName, manifestData);
-                fileHandle = File.OpenRead(fileName);
-                reader = new BufferedStream(fileHandle);
+                _fileHandle = File.OpenRead(fileName);
+                _reader = new BufferedStream(_fileHandle);
                 _tempFileBuffer = fileName;
             }
 
-            reader = new MemoryStream(manifestData);
+            _reader = new MemoryStream(manifestData);
         }
 
         /// <summary>
@@ -163,7 +162,7 @@ namespace UEManifestReader
         /// </summary>
         /// <param name="stream">The <see cref="Stream"/> of the manifest content.</param>
         /// <param name="readSettings">Manifest reading settings.</param>
-        public UESerializedManifestReader(Stream stream, CustomManifestReadingSettings readSettings)
+        public UESerializedManifestReader(Stream stream, CustomManifestReadSettings readSettings)
             : this(stream, readSettings, false, null)
         {
         }
@@ -175,7 +174,7 @@ namespace UEManifestReader
         /// <param name="readSettings">Manifest reading settings.</param>
         /// <param name="writeOutputToFileWhileReading">If <see langword="true"/>, output is gonna be written to file while the manifest file is being read using default json output format.</param>
         /// <param name="outputFileName">File name of the file to which the json output is written. Can be <see langword="null"/> if <paramref name="writeOutputToFileWhileReading"/> is <see langword="false"/>.</param>
-        public UESerializedManifestReader(Stream stream, CustomManifestReadingSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName)
+        public UESerializedManifestReader(Stream stream, CustomManifestReadSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName)
             : this(stream, readSettings, writeOutputToFileWhileReading, outputFileName, JsonOutputFormatFlags.Default)
         {
         }
@@ -188,8 +187,8 @@ namespace UEManifestReader
         /// <param name="writeOutputToFileWhileReading">If <see langword="true"/>, output is gonna be written to file while the manifest file is being read using default json output format.</param>
         /// <param name="outputFileName">File name of the file to which the json output is written. Can be <see langword="null"/> if <paramref name="writeOutputToFileWhileReading"/> is <see langword="false"/>.</param>
         /// <param name="outputFormat">Json output format.</param>
-        public UESerializedManifestReader(Stream stream, CustomManifestReadingSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName, JsonOutputFormatFlags outputFormat)
-            : this(readSettings, writeOutputToFileWhileReading, outputFileName, outputFormat) => reader = stream;
+        public UESerializedManifestReader(Stream stream, CustomManifestReadSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName, JsonOutputFormatFlags outputFormat)
+            : this(readSettings, writeOutputToFileWhileReading, outputFileName, outputFormat) => _reader = stream;
 
         /// <summary>
         /// Downloads the manifest data from the specified <paramref name="manifestUrl"/> and initializes a new instance of the <see cref="UEManifestReader"/> class.
@@ -209,7 +208,7 @@ namespace UEManifestReader
         /// <param name="manifestStorage">The location where to save the download manifest.</param>
         /// <param name="fileName">Name of the file to write the data to. Can be <see langword="null"/> if <paramref name="manifestStorage"/> is <see cref="ManifestStorage.Memory"/>.</param>
         /// <param name="readSettings">Manifest reading settings.</param>
-        public UESerializedManifestReader(Uri manifestUrl, ManifestStorage manifestStorage, string fileName, CustomManifestReadingSettings readSettings)
+        public UESerializedManifestReader(Uri manifestUrl, ManifestStorage manifestStorage, string fileName, CustomManifestReadSettings readSettings)
             : this(manifestUrl, manifestStorage, fileName, readSettings, false, null)
         {
         }
@@ -223,7 +222,7 @@ namespace UEManifestReader
         /// <param name="readSettings">Manifest reading settings.</param>
         /// <param name="writeOutputToFileWhileReading">If <see langword="true"/>, output is gonna be written to file while the manifest file is being read using default json output format.</param>
         /// <param name="outputFileName">File name of the file to which the json output is written. Can be <see langword="null"/> if <paramref name="writeOutputToFileWhileReading"/> is <see langword="false"/>.</param>
-        public UESerializedManifestReader(Uri manifestUrl, ManifestStorage manifestStorage, string fileName, CustomManifestReadingSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName)
+        public UESerializedManifestReader(Uri manifestUrl, ManifestStorage manifestStorage, string fileName, CustomManifestReadSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName)
             : this(manifestUrl, manifestStorage, fileName, readSettings, writeOutputToFileWhileReading, outputFileName, JsonOutputFormatFlags.Default)
         {
         }
@@ -238,7 +237,7 @@ namespace UEManifestReader
         /// <param name="writeOutputToFileWhileReading">If <see langword="true"/>, output is gonna be written to file while the manifest file is being read using default json output format.</param>
         /// <param name="outputFileName">File name of the file to which the json output is written. Can be <see langword="null"/> if <paramref name="writeOutputToFileWhileReading"/> is <see langword="false"/>.</param>
         /// <param name="outputFormat">Json output format.</param>
-        public UESerializedManifestReader(Uri manifestUrl, ManifestStorage manifestStorage, string fileName, CustomManifestReadingSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName, JsonOutputFormatFlags outputFormat)
+        public UESerializedManifestReader(Uri manifestUrl, ManifestStorage manifestStorage, string fileName, CustomManifestReadSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName, JsonOutputFormatFlags outputFormat)
             : this(readSettings, writeOutputToFileWhileReading, outputFileName, outputFormat)
         {
             byte[] data;
@@ -251,21 +250,21 @@ namespace UEManifestReader
             {
                 case ManifestStorage.Disk:
                     File.WriteAllBytes(fileName, data);
-                    fileHandle = File.OpenRead(fileName);
-                    reader = new BufferedStream(fileHandle);
+                    _fileHandle = File.OpenRead(fileName);
+                    _reader = new BufferedStream(_fileHandle);
                     _tempFileBuffer = fileName;
                     break;
                 case ManifestStorage.Memory:
-                    reader = new MemoryStream(data);
+                    _reader = new MemoryStream(data);
                     break;
                 default:
                     throw new ArgumentException(nameof(manifestStorage));
             }
         }
 
-        private UESerializedManifestReader(CustomManifestReadingSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName, JsonOutputFormatFlags outputFormat)
+        private UESerializedManifestReader(CustomManifestReadSettings readSettings, bool writeOutputToFileWhileReading, string outputFileName, JsonOutputFormatFlags outputFormat)
         {
-            _readerSettings = readSettings ?? new CustomManifestReadingSettings();
+            _readerSettings = readSettings ?? new CustomManifestReadSettings();
             if (writeOutputToFileWhileReading)
             {
                 _jsonWriter = new Utf8JsonWriter(File.Open(outputFileName, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None), new JsonWriterOptions()
@@ -286,15 +285,13 @@ namespace UEManifestReader
             _jsonAction = new(6);
         }
 
-        /// <summary>
-        /// Parsed manifest.
-        /// </summary>
+        /// <inheritdoc/>
         public FManifest Manifest { get; }
 
         /// <summary>
         /// Manifest reading settings.
         /// </summary>
-        public CustomManifestReadingSettings ReadingSettings { get; }
+        public CustomManifestReadSettings ReadingSettings { get; }
 
         /// <summary>
         /// If <see langword="true"/>, writes parsed manifest to file.
@@ -306,12 +303,11 @@ namespace UEManifestReader
         /// </summary>
         public JsonOutputFormatFlags OutputFormat { get; }
 
-        /// <summary>
-        /// Read the manifest.
-        /// </summary>
-        /// <param name="tempManifestDataStorage">The location of the modified manifest data if the data can't be processed directly.</param>
-        /// <exception cref="UEManifestReaderException">Throws if an error happens while reading the manifest.</exception>
-        public void ReadManifest(ManifestStorage tempManifestDataStorage = ManifestStorage.Memory)
+        /// <inheritdoc/>
+        public void ReadManifest() => ReadManifest(ManifestStorage.Memory);
+
+        /// <inheritdoc/>
+        public void ReadManifest(ManifestStorage tempManifestDataStorage)
         {
             ReadFManifestHeader(tempManifestDataStorage);
             ExecuteReadIfTrue(_readerSettings.ReadManifestMeta, ReadFManifestMeta);
@@ -324,9 +320,9 @@ namespace UEManifestReader
                 _jsonWriter.Flush();
             }
 
-            if (File.Exists(tempFileName))
+            if (File.Exists(_tempFileName))
             {
-                File.Delete(tempFileName);
+                File.Delete(_tempFileName);
             }
 
             if (File.Exists(_tempFileBuffer))
@@ -337,18 +333,18 @@ namespace UEManifestReader
 
         private void ReadFManifestHeader(ManifestStorage tempManifestDataStorage)
         {
-            uint magic = reader.ReadUInt();
+            uint magic = _reader.ReadUInt();
             if (magic != ManifestHeaderMagic)
             {
                 throw new UEManifestReaderException("[Magic mismatch] The following file is not a UE Manifest file!");
             }
 
-            uint headerSize = reader.ReadUInt();
-            uint dataSizeUncompressed = reader.ReadUInt();
-            uint dataSizeCompressed = reader.ReadUInt();
-            byte[] sHAHash = reader.ReadBytes(20);
-            EManifestStorageFlags storedAs = (EManifestStorageFlags)reader.ReadByte();
-            EFeatureLevel version = headerSize > 37 ? (EFeatureLevel)reader.ReadInt() : EFeatureLevel.StoredAsCompressedUClass;
+            uint headerSize = _reader.ReadUInt();
+            uint dataSizeUncompressed = _reader.ReadUInt();
+            uint dataSizeCompressed = _reader.ReadUInt();
+            byte[] sHAHash = _reader.ReadBytes(20);
+            EManifestStorageFlags storedAs = (EManifestStorageFlags)_reader.ReadByte();
+            EFeatureLevel version = headerSize > 37 ? (EFeatureLevel)_reader.ReadInt() : EFeatureLevel.StoredAsCompressedUClass;
             if (version < EFeatureLevel.StoredAsBinaryData)
             {
                 throw new UEManifestReaderException($"Manifest version {version} is not supported for the time being!", new NotSupportedException());
@@ -356,19 +352,19 @@ namespace UEManifestReader
 
             if ((storedAs & EManifestStorageFlags.Compressed) == EManifestStorageFlags.Compressed)
             {
-                GetDataAndCheckHash(new ZlibStream(reader, CompressionMode.Decompress), (int)dataSizeUncompressed, sHAHash, tempManifestDataStorage);
+                GetDataAndCheckHash(new ZlibStream(_reader, CompressionMode.Decompress), (int)dataSizeUncompressed, sHAHash, tempManifestDataStorage);
             }
             else
             {
-                GetDataAndCheckHash(reader, (int)dataSizeCompressed, sHAHash, tempManifestDataStorage);
+                GetDataAndCheckHash(_reader, (int)dataSizeCompressed, sHAHash, tempManifestDataStorage);
             }
         }
 
         private void ReadFManifestMeta()
         {
-            EManifestMetaVersion dataVersion = (EManifestMetaVersion)reader.ReadByte();
+            EManifestMetaVersion dataVersion = (EManifestMetaVersion)_reader.ReadByte();
             bool serializeBuildId = dataVersion >= EManifestMetaVersion.SerialisesBuildId;
-            FManifestMeta manifestMeta = new(reader, serializeBuildId);
+            FManifestMeta manifestMeta = new(_reader, serializeBuildId);
             EFeatureLevel version = (EFeatureLevel)manifestMeta.ManifestVersion;
             EChunkSubdir chunkSubdir = Manifest.ChunkSubdir = version < EFeatureLevel.DataFileRenames ? EChunkSubdir.Chunks
                                                               : version < EFeatureLevel.ChunkCompressionSupport ? EChunkSubdir.ChunksV2
@@ -406,7 +402,7 @@ namespace UEManifestReader
             _jsonWriter.WriteString("PrereqArgs", manifestMeta.PrereqArgs);
             if (serializeBuildId)
             {
-                _jsonWriter.WriteString("BuildId", reader.ReadFString());
+                _jsonWriter.WriteString("BuildId", _reader.ReadFString());
             }
 
             _jsonWriter.Flush();
@@ -414,142 +410,142 @@ namespace UEManifestReader
 
         private void ReadFChunkDataList()
         {
-            _ = /*(EChunkDataListVersion)*/reader.ReadByte(); //no need to verify the version. The authenticity of the file is asserted when comparing the hashes
-            int elementCount = reader.ReadInt();
+            _ = /*(EChunkDataListVersion)*/_reader.ReadByte(); //no need to verify the version. The authenticity of the file is asserted when comparing the hashes
+            int elementCount = _reader.ReadInt();
             string[] guids = null;
             Action<string, string[]> jsonGuidPropertiesActionString;
             Action<string, uint?[]> jsonGuidPropertyActionNumber;
             if (_readerSettings.ReadChunksGuid)
             {
-                guids = reader.ReadArray(elementCount, () => new FGuid(reader).ToString());
+                guids = _reader.ReadArray(elementCount, () => new FGuid(_reader).ToString());
                 jsonGuidPropertiesActionString = (propertyName, value) =>
+                {
+                    _jsonWriter.WriteStartObject(propertyName);
+                    for (int i = 0; i < elementCount; i++)
                     {
-                        _jsonWriter.WriteStartObject("ChunksHashList");
-                        for (int i = 0; i < elementCount; i++)
-                        {
-                            _jsonWriter.WriteString(guids[i], value[i]);
-                        }
+                        _jsonWriter.WriteString(guids[i], value[i]);
+                    }
 
-                        _jsonWriter.WriteEndObject();
-                    };
+                    _jsonWriter.WriteEndObject();
+                };
 
                 jsonGuidPropertyActionNumber = (propertyName, value) =>
+                {
+                    _jsonWriter.WriteStartObject(propertyName);
+                    for (int i = 0; i < elementCount; i++)
                     {
-                        _jsonWriter.WriteStartObject("ChunksHashList");
-                        for (int i = 0; i < elementCount; i++)
-                        {
-                            _jsonWriter.WriteNumber(guids[i], (uint)(value[i]));
-                        }
+                        _jsonWriter.WriteNumber(guids[i], (uint)(value[i]));
+                    }
 
-                        _jsonWriter.WriteEndObject();
-                    };
+                    _jsonWriter.WriteEndObject();
+                };
             }
             else
             {
                 jsonGuidPropertiesActionString = (propertyName, value) =>
+                {
+                    _jsonWriter.WriteStartArray(propertyName);
+                    for (int i = 0; i < elementCount; i++)
                     {
-                        _jsonWriter.WriteStartArray("ChunksHashList");
-                        for (int i = 0; i < elementCount; i++)
-                        {
-                            _jsonWriter.WriteStringValue(value[i]);
-                        }
+                        _jsonWriter.WriteStringValue(value[i]);
+                    }
 
-                        _jsonWriter.WriteEndArray();
-                    };
+                    _jsonWriter.WriteEndArray();
+                };
 
                 jsonGuidPropertyActionNumber = (propertyName, value) =>
+                {
+                    _jsonWriter.WriteStartArray(propertyName);
+                    for (int i = 0; i < elementCount; i++)
                     {
-                        _jsonWriter.WriteStartArray("ChunksHashList");
-                        for (int i = 0; i < elementCount; i++)
-                        {
-                            _jsonWriter.WriteNumberValue((uint)(value[i]));
-                        }
+                        _jsonWriter.WriteNumberValue((uint)(value[i]));
+                    }
 
-                        _jsonWriter.WriteEndArray();
-                    };
+                    _jsonWriter.WriteEndArray();
+                };
 
-                reader.Position += elementCount * 16; // sizeof(FGuid) = 16 bytes
+                _reader.Position += elementCount * 16; // sizeof(FGuid) = 16 bytes
             }
 
             string[] hashes = null;
             if (_readerSettings.ReadChunksHash)
             {
-                hashes = reader.ReadArray(elementCount, () => Utilities.ULongToHexHash(reader.ReadULong()));
+                hashes = _reader.ReadArray(elementCount, () => Utilities.ULongToHexHash(_reader.ReadULong()));
                 _jsonAction.Add((_) =>
-                    {
-                        jsonGuidPropertiesActionString("ChunksHashList", hashes);
-                    });
+                {
+                    jsonGuidPropertiesActionString("ChunksHashList", hashes);
+                });
             }
             else
             {
-                reader.Position += elementCount * sizeof(ulong);  // in the manifest, hashes are stored as ulong values (8 bytes) but they are converted to hex string during the parsing process in order to be usable
+                _reader.Position += elementCount * sizeof(ulong);  // in the manifest, hashes are stored as ulong values (8 bytes) but they are converted to hex string during the parsing process in order to be usable
             }
 
             string[] shaHashes = null;
             if (_readerSettings.ReadChunksShaHash)
             {
-                shaHashes = reader.ReadArray(elementCount, () => Utilities.BytesToHexadecimalString(reader.ReadBytes(20)));
+                shaHashes = _reader.ReadArray(elementCount, () => Utilities.BytesToHexadecimalString(_reader.ReadBytes(20)));
                 if (!_jsonSimplified)
                 {
                     _jsonAction.Add((_) =>
-                        {
-                            jsonGuidPropertiesActionString("ChunksShaHashList", shaHashes);
-                        });
+                    {
+                        jsonGuidPropertiesActionString("ChunksShaHashList", shaHashes);
+                    });
                 }
             }
             else
             {
-                reader.Position += elementCount * 20; // sizeof(SHA1 hash) = 20 bytes
+                _reader.Position += elementCount * 20; // sizeof(SHA1 hash) = 20 bytes
             }
 
             string[] groupNumbers = null;
             if (_readerSettings.ReadChunksGroupNumber)
             {
-                groupNumbers = reader.ReadArray(elementCount, () => $"{reader.ReadByte():D2}");
+                groupNumbers = _reader.ReadArray(elementCount, () => $"{_reader.ReadByte():D2}");
                 _jsonAction.Add((_) =>
-                    {
-                        jsonGuidPropertiesActionString("ChunksGroupNumberList", groupNumbers);
+                {
+                    jsonGuidPropertiesActionString("ChunksGroupNumberList", groupNumbers);
 
-                    });
+                });
             }
             else
             {
-                reader.Position += elementCount; // * sizeof(byte)  // group numbers are stored as byte (1 byte) in the manifests but they are converted to string during parsing process in order for them to be usable
+                _reader.Position += elementCount; // * sizeof(byte)  // group numbers are stored as byte (1 byte) in the manifests but they are converted to string during parsing process in order for them to be usable
             }
 
             uint?[] windowSizes = null;
             if (_readerSettings.ReadChunksWindowSize)
             {
-                windowSizes = reader.ReadArray(elementCount, () => (uint?)reader.ReadUInt());
+                windowSizes = _reader.ReadArray(elementCount, () => (uint?)_reader.ReadUInt());
 
                 if (!_jsonSimplified)
                 {
                     _jsonAction.Add((_) =>
-                        {
-                            jsonGuidPropertyActionNumber("ChunksWindowSizeList", windowSizes);
-                        });
+                    {
+                        jsonGuidPropertyActionNumber("ChunksWindowSizeList", windowSizes);
+                    });
                 }
             }
             else
             {
-                reader.Position += elementCount * sizeof(uint);
+                _reader.Position += elementCount * sizeof(uint);
             }
 
             uint?[] filesSize = null;
             if (_readerSettings.ReadChunksDownloadSize)
             {
-                filesSize = reader.ReadArray(elementCount, () => (uint?)reader.ReadLong());
+                filesSize = _reader.ReadArray(elementCount, () => (uint?)_reader.ReadLong());
                 if (!_jsonSimplified)
                 {
                     _jsonAction.Add((_) =>
-                        {
-                            jsonGuidPropertyActionNumber("ChunksFileSizeList", filesSize);
-                        });
+                    {
+                        jsonGuidPropertyActionNumber("ChunksFileSizeList", filesSize);
+                    });
                 }
             }
             else
             {
-                reader.Position += elementCount * sizeof(long); // fileSize are long values (8 bytes)
+                _reader.Position += elementCount * sizeof(long); // fileSize are long values (8 bytes)
             }
 
             List<FChunkInfo> chunkInfos = new(elementCount);
@@ -577,106 +573,106 @@ namespace UEManifestReader
 
         private void ReadFFileManifest()
         {
-            _ = /*(EChunkDataListVersion)*/reader.ReadByte();
-            int elementCount = reader.ReadInt();
+            _ = /*(EChunkDataListVersion)*/_reader.ReadByte();
+            int elementCount = _reader.ReadInt();
             string[] fileNames = null;
             if (_readerSettings.ReadFileFileName)
             {
-                fileNames = reader.ReadArray(elementCount, () => reader.ReadFString());
+                fileNames = _reader.ReadArray(elementCount, () => _reader.ReadFString());
                 _jsonAction.Add((fileManifest) =>
-                    {
-                        _jsonWriter.WriteString("Filename", fileManifest.Filename);
-                    });
+                {
+                    _jsonWriter.WriteString("Filename", fileManifest.Filename);
+                });
             }
             else
             {
                 for (int i = 0; i < elementCount; i++)
                 {
-                    reader.SkipFString();
+                    _reader.SkipFString();
                 }
             }
 
             string[] symLinkTargets = null;
             if (_readerSettings.ReadFileSymLinkTarget)
             {
-                symLinkTargets = reader.ReadArray(elementCount, () => reader.ReadFString());
+                symLinkTargets = _reader.ReadArray(elementCount, () => _reader.ReadFString());
 
                 if (!_jsonSimplified)
                 {
                     _jsonAction.Add((fileManifest) =>
-                        {
-                            _jsonWriter.WriteString("FileSymlinkTarget", fileManifest.SymlinkTarget);
-                        });
+                    {
+                        _jsonWriter.WriteString("FileSymlinkTarget", fileManifest.SymlinkTarget);
+                    });
                 }
             }
             else
             {
                 for (int i = 0; i < elementCount; i++)
                 {
-                    reader.SkipFString();
+                    _reader.SkipFString();
                 }
             }
 
             string[] filesHash = null;
             if (_readerSettings.ReadFileHash)
             {
-                filesHash = reader.ReadArray(elementCount, () => Utilities.BytesToHexadecimalString(reader.ReadBytes(20)));
+                filesHash = _reader.ReadArray(elementCount, () => Utilities.BytesToHexadecimalString(_reader.ReadBytes(20)));
                 if (!_jsonSimplified)
                 {
                     _jsonAction.Add((fileManifest) =>
-                        {
-                            _jsonWriter.WriteString("FileHash", fileManifest.FileHash);
-                        });
+                    {
+                        _jsonWriter.WriteString("FileHash", fileManifest.FileHash);
+                    });
                 }
             }
             else
             {
-                reader.Position += elementCount * 20; // sizeof(SHA1 hash) = 20 bytes
+                _reader.Position += elementCount * 20; // sizeof(SHA1 hash) = 20 bytes
             }
 
             EFileMetaFlags?[] filesMetaTags = null;
             if (_readerSettings.ReadFileMetaFlag)
             {
-                filesMetaTags = reader.ReadArray(elementCount, () => (EFileMetaFlags?)reader.ReadByte());
+                filesMetaTags = _reader.ReadArray(elementCount, () => (EFileMetaFlags?)_reader.ReadByte());
                 if (!_jsonSimplified)
                 {
                     _jsonAction.Add((fileManifest) =>
-                        {
-                            _jsonWriter.WriteString("FileMetaFlag", fileManifest.FileMetaFlags.ToString());
-                        });
+                    {
+                        _jsonWriter.WriteString("FileMetaFlag", fileManifest.FileMetaFlags.ToString());
+                    });
                 }
             }
             else
             {
-                reader.Position += elementCount; // * 1   EFileMetaFlags underlying type is byte (1 byte)
+                _reader.Position += elementCount; // * 1   EFileMetaFlags underlying type is byte (1 byte)
             }
 
             string[][] installTags = null;
             if (_readerSettings.ReadFileInstallTags)
             {
-                installTags = reader.ReadArray(elementCount, () => reader.ReadTArray(() => reader.ReadFString()));
+                installTags = _reader.ReadArray(elementCount, () => _reader.ReadTArray(() => _reader.ReadFString()));
                 if (!_jsonSimplified)
                 {
                     _jsonAction.Add((fileManifest) =>
+                    {
+                        _jsonWriter.WriteStartArray("InstallTags");
+                        for (int j = 0; j < fileManifest.InstallTags.Count; j++)
                         {
-                            _jsonWriter.WriteStartArray("InstallTags");
-                            for (int j = 0; j < fileManifest.InstallTags.Count; j++)
-                            {
-                                _jsonWriter.WriteStringValue(fileManifest.InstallTags[j]);
-                            }
+                            _jsonWriter.WriteStringValue(fileManifest.InstallTags[j]);
+                        }
 
-                            _jsonWriter.WriteEndArray();
-                        });
+                        _jsonWriter.WriteEndArray();
+                    });
                 }
             }
             else
             {
                 for (int i = 0; i < elementCount; i++)
                 {
-                    int num = reader.ReadInt();
+                    int num = _reader.ReadInt();
                     for (int j = 0; j < num; j++)
                     {
-                        reader.SkipFString();
+                        _reader.SkipFString();
                     }
                 }
             }
@@ -684,7 +680,7 @@ namespace UEManifestReader
             FChunkPart[][] chunksParts = null;
             if (_readerSettings.ReadFChunkPart)
             {
-                chunksParts = reader.ReadArray(elementCount, () => reader.ReadTArray(() => new FChunkPart(reader)));
+                chunksParts = _reader.ReadArray(elementCount, () => _reader.ReadTArray(() => new FChunkPart(_reader)));
                 Action<FFileManifest> ac;
                 if (!_jsonGrouped)
                 {
@@ -732,10 +728,10 @@ namespace UEManifestReader
             {
                 for (int i = 0; i < elementCount; i++)
                 {
-                    int num = reader.ReadInt();
+                    int num = _reader.ReadInt();
                     for (int j = 0; j < num; j++)
                     {
-                        reader.Position += 28; // fchunkpart struct size
+                        _reader.Position += 28; // fchunkpart struct size
                     }
                 }
             }
@@ -770,10 +766,10 @@ namespace UEManifestReader
 
         private void ReadFCustomFields()
         {
-            _ = /*(EChunkDataListVersion)*/reader.ReadByte();
-            int elementCount = reader.ReadInt();
-            string[] keys = reader.ReadArray(elementCount, () => reader.ReadFString());
-            string[] values = reader.ReadArray(elementCount, () => reader.ReadFString());
+            _ = /*(EChunkDataListVersion)*/_reader.ReadByte();
+            int elementCount = _reader.ReadInt();
+            string[] keys = _reader.ReadArray(elementCount, () => _reader.ReadFString());
+            string[] values = _reader.ReadArray(elementCount, () => _reader.ReadFString());
             Manifest.CustomFields = new(elementCount);
             for (int i = 0; i < elementCount; i++)
             {
@@ -835,18 +831,18 @@ namespace UEManifestReader
 
             if (stream is ZlibStream)
             {
-                fileHandle.Dispose();
-                reader.Dispose();
+                _fileHandle.Dispose();
+                _reader.Dispose();
                 if (tempManifestDataStorage == ManifestStorage.Disk)
                 {
-                    tempFileName = $"{Environment.TickCount64}.tmp"; // in order to have a random temp file name
-                    File.WriteAllBytes(tempFileName, buffer);
-                    fileHandle = File.OpenRead(tempFileName);
-                    reader = new BufferedStream(fileHandle);
+                    _tempFileName = $"{Environment.TickCount64}.tmp"; // in order to have a random temp file name
+                    File.WriteAllBytes(_tempFileName, buffer);
+                    _fileHandle = File.OpenRead(_tempFileName);
+                    _reader = new BufferedStream(_fileHandle);
                 }
                 else
                 {
-                    reader = new MemoryStream(buffer);
+                    _reader = new MemoryStream(buffer);
                 }
             }
         }
@@ -854,56 +850,42 @@ namespace UEManifestReader
         private void CreateLookUp(out Dictionary<string, string> hashesLookup, out Dictionary<string, string> datagroupsLookup)
         {
             int cap = Manifest.ChunkList.Count;
-            Dictionary<string, string> haLookup = new(cap);
-            Dictionary<string, string> dgLookup = new(cap);
-            Task hashLookup = Task.Run(() =>
+            hashesLookup = new(cap);
+            datagroupsLookup = new(cap);
+            for (int i = 0; i < cap; i++)
             {
-                for (int i = 0; i < cap; i++)
-                {
-                    FChunkInfo chunkInfo = Manifest.ChunkList[i];
-                    haLookup.Add(chunkInfo.Guid, chunkInfo.Hash);
-                }
-            });
-
-            Task datagroupLookup = Task.Run(() =>
-            {
-                for (int i = 0; i < cap; i++)
-                {
-                    FChunkInfo chunkInfo = Manifest.ChunkList[i];
-                    dgLookup.Add(chunkInfo.Guid, chunkInfo.GroupNumber);
-                }
-            });
-
-            Task.WaitAll(hashLookup, datagroupLookup);
-            hashesLookup = haLookup;
-            datagroupsLookup = dgLookup;
+                FChunkInfo chunkInfo = Manifest.ChunkList[i];
+                string guid = chunkInfo.Guid;
+                hashesLookup.Add(guid, chunkInfo.Hash);
+                datagroupsLookup.Add(guid, chunkInfo.GroupNumber);
+            }
         }
 
         private void ExecuteReadIfTrue(bool shouldRead, Action toExecute)
         {
-            uint dataSizeToSkip = reader.ReadUInt();
+            uint dataSizeToSkip = _reader.ReadUInt();
             if (shouldRead)
             {
                 toExecute();
             }
             else
             {
-                reader.Position += dataSizeToSkip - sizeof(uint);
+                _reader.Position += dataSizeToSkip - sizeof(uint);
             }
         }
 
         private void Dispose(bool disposing)
         {
-            if (!disposed)
+            if (!_disposed)
             {
                 if (disposing)
                 {
                     _jsonWriter?.Dispose();
-                    reader.Dispose();
-                    fileHandle?.Close();
+                    _reader.Dispose();
+                    _fileHandle?.Close();
                 }
 
-                disposed = !disposed;
+                _disposed = !_disposed;
             }
         }
 

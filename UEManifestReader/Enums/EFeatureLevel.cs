@@ -1,5 +1,8 @@
 ﻿namespace UEManifestReader.Enums
 {
+    /// <summary>
+    /// Supported features of the manifest.
+    /// </summary>
     public enum EFeatureLevel
     {
         /// <summary>

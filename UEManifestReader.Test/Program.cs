@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using UEManifestReader.Enums;
 
 namespace UEManifestReader.Test
 {
@@ -10,7 +11,7 @@ namespace UEManifestReader.Test
         {
             UESerializedManifestReader x = new(
                 @"",
-                CustomManifestReadingSettings.ReadOnlyWhatIsNecessaryForDownload, true, @"", JsonOutputFormatFlags.Grouped | JsonOutputFormatFlags.Indented);
+                CustomManifestReadSettings.ReadOnlyWhatIsNecessaryForDownload, true, @"", JsonOutputFormatFlags.Grouped | JsonOutputFormatFlags.Indented);
             Stopwatch a = new();
             a.Start();
             x.ReadManifest();

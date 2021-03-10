@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UEManifestReader
+namespace UEManifestReader.Enums
 {
     /// <summary>
     /// The way to write the json output data to the file.
@@ -9,22 +9,22 @@ namespace UEManifestReader
     public enum JsonOutputFormatFlags
     {
         /// <summary>
-        /// Write to the file the data as it is.
+        /// Writes to the file the data as it is (with no indentation).
         /// </summary>
         Default = 0,
 
         /// <summary>
-        /// Write to the file the data in indented format.
+        /// Writes to the file the data in an indented format.
         /// </summary>
         Indented = 1,
 
         /// <summary>
-        /// Write to the file the data grouped for each file.
+        /// Writes to the file the informations and data of each file after grouping them.
         /// </summary>
         Grouped = 1 << 1,
 
         /// <summary>
-        /// Write to the file only the data needed to download the game/app files.
+        /// Writes to the file only the data needed to download the game/app files.
         /// </summary>
         Simplified = 1 << 2,
     }

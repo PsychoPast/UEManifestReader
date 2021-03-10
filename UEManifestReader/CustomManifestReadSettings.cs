@@ -2,11 +2,11 @@
 
 namespace UEManifestReader
 {
-    public sealed class CustomManifestReadingSettings
+    public sealed class CustomManifestReadSettings
     {
-        private ushort settingsFlag;
+        private ushort _settingsFlag;
 
-        public CustomManifestReadingSettings(
+        public CustomManifestReadSettings(
             bool readManifestMeta = true, 
             bool readChunksGuid = true, 
             bool readChunksHash = true, 
@@ -38,7 +38,7 @@ namespace UEManifestReader
                 readFChunksParts,
                 readCustomFields);
 
-        public static CustomManifestReadingSettings ReadOnlyWhatIsNecessaryForDownload =>
+        public static CustomManifestReadSettings ReadOnlyWhatIsNecessaryForDownload =>
             new
                 (
                 true, 
@@ -94,12 +94,12 @@ namespace UEManifestReader
             {
                 if (values[i])
                 {
-                    settingsFlag |= (ushort)(1 << i);
+                    _settingsFlag |= (ushort)(1 << i);
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool CheckFlag(byte index) => ((settingsFlag >> index) & 1) != 0;
+        private bool CheckFlag(byte index) => ((_settingsFlag >> index) & 1) != 0;
     }
 }
