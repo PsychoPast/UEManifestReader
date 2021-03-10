@@ -4,7 +4,7 @@ namespace UEManifestReader.Objects
 {
     public readonly struct FChunkInfo : IEquatable<FChunkInfo>
     {
-        internal FChunkInfo(string guid, string hash, string shaHash, string grpNum, uint? windowSize, long? fileSize)
+        public FChunkInfo(string guid, string hash, string shaHash, string grpNum, uint? windowSize, long? fileSize)
         {
             Guid = guid;
             Hash = hash;

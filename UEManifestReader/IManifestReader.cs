@@ -23,7 +23,7 @@ namespace UEManifestReader
         /// <summary>
         /// Read the manifest.
         /// </summary>
-        /// <param name="tempManifestDataStorage">The location of the modified manifest data if the data can't be processed directly.</param>
+        /// <param name="storage">The location of the modified manifest data if the data can't be processed directly.</param>
         /// <exception cref="UEManifestReaderException">Throws if an error happens while reading the manifest.</exception>
         public void ReadManifest(ManifestStorage storage);
     }

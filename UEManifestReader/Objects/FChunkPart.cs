@@ -5,6 +5,13 @@ namespace UEManifestReader.Objects
 {
     public readonly struct FChunkPart : IEquatable<FChunkPart>
     {
+        public FChunkPart(string guid, uint offset, uint size)
+        {
+            Guid = guid;
+            Offset = offset;
+            Size = size;
+        }
+
         internal FChunkPart(Stream reader)
         {
             reader.ReadUInt(); // dataSize
