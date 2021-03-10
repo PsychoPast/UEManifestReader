@@ -831,13 +831,13 @@ namespace UEManifestReader
 
             if (stream is ZlibStream)
             {
-                _fileHandle.Dispose();
+                _fileHandle?.Dispose();
                 _reader.Dispose();
                 if (tempManifestDataStorage == ManifestStorage.Disk)
                 {
                     _tempFileName = $"{Environment.TickCount64}.tmp"; // in order to have a random temp file name
                     File.WriteAllBytes(_tempFileName, buffer);
-                    _fileHandle = File.OpenRead(_tempFileName);
+                    _fileHandle = File.Open(_tempFileName, FileMode.Open, FileAccess.Read, FileShare.Delete);
                     _reader = new BufferedStream(_fileHandle);
                 }
                 else
