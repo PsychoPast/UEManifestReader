@@ -7,30 +7,32 @@ namespace UEManifestReader
 {
     internal static class StreamExtension
     {
-        internal static byte[] ReadBytes(this Stream stream, int length)
+        internal static T[] ReadArray<T>(this Stream _, int count, Func<T> readAs)
         {
-            byte[] buffer = new byte[length];
-            stream.Read(buffer, 0, length);
-            return buffer;
-        }
+            if (count == 0)
+            {
+                return Array.Empty<T>();
+            }
 
-        internal static void SkipFString(this Stream stream)
-        {
-            int fStringLength = stream.ReadInt();
-            stream.Position += fStringLength > 0 ? fStringLength : -fStringLength * sizeof(char);
+            var buffer = new T[count];
+            for (var i = 0; i < count; i++)
+            {
+                buffer[i] = readAs();
+            }
+
+            return buffer;
         }
 
         internal static bool ReadBool(this Stream stream) => UnsafeReadAs<byte>(stream) != 0;
 
+        internal static byte[] ReadBytes(this Stream stream, int length)
+        {
+            var buffer = new byte[length];
+            stream.Read(buffer, 0, length);
+            return buffer;
+        }
+
         internal static char ReadChar(this Stream stream) => UnsafeReadAs<char>(stream);
-
-        internal static int ReadInt(this Stream stream) => UnsafeReadAs<int>(stream);
-
-        internal static uint ReadUInt(this Stream stream) => UnsafeReadAs<uint>(stream);
-
-        internal static long ReadLong(this Stream stream) => UnsafeReadAs<long>(stream);
-
-        internal static ulong ReadULong(this Stream stream) => UnsafeReadAs<ulong>(stream);
 
         internal static string ReadFString(this Stream stream)
         {
@@ -50,16 +52,18 @@ namespace UEManifestReader
             {
                 case 0:
                     return string.Empty;
+
                 case 1 when stream.ReadByte() != 0:
                     throw new UEManifestReaderException(null, new FStringInvalidException("FString is not null terminated!"));
+
                 case 1:
                     return string.Empty;
             }
 
             if (bLoadUnicodeChar)
             {
-                char[] chars = new char[saveNum];
-                for (int i = 0; i < saveNum; i++)
+                var chars = new char[saveNum];
+                for (var i = 0; i < saveNum; i++)
                 {
                     chars[i] = stream.ReadChar();
                 }
@@ -81,29 +85,27 @@ namespace UEManifestReader
             return Encoding.ASCII.GetString(buffer, 0, buffer.Length - 1);
         }
 
+        internal static int ReadInt(this Stream stream) => UnsafeReadAs<int>(stream);
+
+        internal static long ReadLong(this Stream stream) => UnsafeReadAs<long>(stream);
+
         internal static T[] ReadTArray<T>(this Stream stream, Func<T> readAs) => ReadArray(stream, stream.ReadInt(), readAs);
 
-        internal static T[] ReadArray<T>(this Stream _, int count, Func<T> readAs)
+        internal static uint ReadUInt(this Stream stream) => UnsafeReadAs<uint>(stream);
+
+        internal static ulong ReadULong(this Stream stream) => UnsafeReadAs<ulong>(stream);
+
+        internal static void SkipFString(this Stream stream)
         {
-            if (count == 0)
-            {
-                return Array.Empty<T>();
-            }
-
-            T[] buffer = new T[count];
-            for (int i = 0; i < count; i++)
-            {
-                buffer[i] = readAs();
-            }
-
-            return buffer;
+            int fStringLength = stream.ReadInt();
+            stream.Position += fStringLength > 0 ? fStringLength : -fStringLength * sizeof(char);
         }
 
         private static unsafe T UnsafeReadAs<T>(this Stream stream)
             where T : unmanaged
         {
             byte* byteAlloc = stackalloc byte[sizeof(T)];
-            for (int i = 0; i < sizeof(T); i++)
+            for (var i = 0; i < sizeof(T); i++)
             {
                 byteAlloc[i] = (byte)stream.ReadByte();
             }

@@ -7,7 +7,9 @@ namespace UEManifestReader.Objects
 {
     public sealed class FManifestMeta
     {
-        public FManifestMeta() { }
+        public FManifestMeta()
+        {
+        }
 
         public FManifestMeta(
             int version,
@@ -39,18 +41,19 @@ namespace UEManifestReader.Objects
         }
 
         internal FManifestMeta(Stream reader, bool includeBuildId)
-            : this(reader.ReadInt(),
-                   reader.ReadBool(),
-                   reader.ReadUInt(),
-                   reader.ReadFString(),
-                   reader.ReadFString(),
-                   reader.ReadFString(),
-                   reader.ReadFString(),
-                   reader.ReadTArray(reader.ReadFString).ToList(),
-                   reader.ReadFString(),
-                   reader.ReadFString(),
-                   reader.ReadFString(),
-                   default)
+            : this(
+                reader.ReadInt(),
+                reader.ReadBool(),
+                reader.ReadUInt(),
+                reader.ReadFString(),
+                reader.ReadFString(),
+                reader.ReadFString(),
+                reader.ReadFString(),
+                reader.ReadTArray(reader.ReadFString).ToList(),
+                reader.ReadFString(),
+                reader.ReadFString(),
+                reader.ReadFString(),
+                default)
         {
             if (includeBuildId)
             {
@@ -59,68 +62,68 @@ namespace UEManifestReader.Objects
         }
 
         /// <summary>
-        /// Manifest version. 
-        /// </summary>
-        public int ManifestVersion { get; set; }
-
-        /// <summary>
-        /// The feature level support this build was created with, regardless of the serialized format.
-        /// </summary>
-        public EFeatureLevel ManifestFeatureLevel { get; set; }
-
-        /// <summary>
-        /// Whether this is a legacy 'nochunks' build.
-        /// </summary>
-        public bool IsFileData { get; set; }
-
-        /// <summary>
-        /// The app id provided at generation.
+        ///     The app id provided at generation.
         /// </summary>
         public uint AppId { get; set; }
 
         /// <summary>
-        /// The app name string provided at generation.
+        ///     The app name string provided at generation.
         /// </summary>
         public string AppName { get; set; }
 
         /// <summary>
-        /// The build version string provided at generation.
+        ///     A unique build id generated at original chunking time to identify an exact build.
+        /// </summary>
+        public string BuildId { get; set; }
+
+        /// <summary>
+        ///     The build version string provided at generation.
         /// </summary>
         public string BuildVersion { get; set; }
 
         /// <summary>
-        /// The file in this manifest designated the application executable of the build.
+        ///     Whether this is a legacy 'nochunks' build.
         /// </summary>
-        public string LaunchExe { get; set; }
+        public bool IsFileData { get; set; }
 
         /// <summary>
-        /// The command line required when launching the application executable.
+        ///     The command line required when launching the application executable.
         /// </summary>
         public string LaunchCommand { get; set; }
 
         /// <summary>
-        /// The set of prerequisite ids for dependencies that this build's prerequisite installer will apply.
+        ///     The file in this manifest designated the application executable of the build.
         /// </summary>
-        public List<string> PrereqIds { get; set; }
+        public string LaunchExe { get; set; }
 
         /// <summary>
-        /// A display string for the prerequisite provided at generation.
+        ///     The feature level support this build was created with, regardless of the serialized format.
         /// </summary>
-        public string PrereqName { get; set; }
+        public EFeatureLevel ManifestFeatureLevel { get; set; }
 
         /// <summary>
-        /// The file in this manifest designated the launch executable of the prerequisite installer.
+        ///     Manifest version.
         /// </summary>
-        public string PrereqPath { get; set; }
+        public int ManifestVersion { get; set; }
 
         /// <summary>
-        /// The command line required when launching the prerequisite installer.
+        ///     The command line required when launching the prerequisite installer.
         /// </summary>
         public string PrereqArgs { get; set; }
 
         /// <summary>
-        /// A unique build id generated at original chunking time to identify an exact build.
+        ///     The set of prerequisite ids for dependencies that this build's prerequisite installer will apply.
         /// </summary>
-        public string BuildId { get; set; }
+        public List<string> PrereqIds { get; set; }
+
+        /// <summary>
+        ///     A display string for the prerequisite provided at generation.
+        /// </summary>
+        public string PrereqName { get; set; }
+
+        /// <summary>
+        ///     The file in this manifest designated the launch executable of the prerequisite installer.
+        /// </summary>
+        public string PrereqPath { get; set; }
     }
 }

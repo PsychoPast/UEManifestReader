@@ -21,17 +21,17 @@ namespace UEManifestReader.Objects
         }
 
         /// <summary>
-        /// The GUID of the chunk containing this part.
+        ///     The GUID of the chunk containing this part.
         /// </summary>
         public string Guid { get; }
 
         /// <summary>
-        /// The offset of the first byte into the chunk.
+        ///     The offset of the first byte into the chunk.
         /// </summary>
         public uint Offset { get; }
 
         /// <summary>
-        /// The size of this part.
+        ///     The size of this part.
         /// </summary>
         public uint Size { get; }
 

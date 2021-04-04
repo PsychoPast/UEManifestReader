@@ -17,22 +17,6 @@ namespace UEManifestReader
             return new string(buffer);
         }
 
-        internal static byte[] SwapBytesOrder(ReadOnlySpan<byte> input)
-        {
-            byte[] buffer = new byte[input.Length];
-            int lastIndex = input.Length - 1;
-            fixed (byte* pByte = input)
-            {
-                byte* cByte = pByte;
-                for (int i = 0; i < input.Length; i++)
-                {
-                    buffer[lastIndex--] = *cByte++;
-                }
-            }
-
-            return buffer;
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TOutput ReinterpretCast<TOutput>(nint ptr)
             where TOutput : unmanaged
@@ -43,6 +27,22 @@ namespace UEManifestReader
             }
 
             return *(TOutput*)ptr;
+        }
+
+        internal static byte[] SwapBytesOrder(ReadOnlySpan<byte> input)
+        {
+            var buffer = new byte[input.Length];
+            int lastIndex = input.Length - 1;
+            fixed (byte* pByte = input)
+            {
+                byte* cByte = pByte;
+                for (var i = 0; i < input.Length; i++)
+                {
+                    buffer[lastIndex--] = *cByte++;
+                }
+            }
+
+            return buffer;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -66,10 +66,13 @@ namespace UEManifestReader
             return BytesToHexadecimalString(buffer);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static char GetHexCharFromByte(byte rawByte) => (char)(rawByte > 9 ? rawByte - 10 + 'A' : rawByte + '0');
+
         private static void ToHexadecimalString(int length, char* buffer, byte* pByte)
         {
             byte rawByte;
-            for (int i = 0; i < length; i++)
+            for (var i = 0; i < length; i++)
             {
                 rawByte = (byte)(*pByte >> 4);
                 *buffer++ = GetHexCharFromByte(rawByte);
@@ -77,11 +80,5 @@ namespace UEManifestReader
                 *buffer++ = GetHexCharFromByte(rawByte);
             }
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static char GetHexCharFromByte(byte rawByte)
-            => (char)(rawByte > 9 ?
-                          rawByte - 10 + 'A' :
-                          rawByte + '0');
     }
 }

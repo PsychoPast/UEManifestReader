@@ -1,7 +1,7 @@
-﻿namespace UEManifestReader.Exceptions
-{
-    using System;
+﻿using System;
 
+namespace UEManifestReader.Exceptions
+{
     public class UEManifestReaderException : Exception
     {
         public UEManifestReaderException(string message)
