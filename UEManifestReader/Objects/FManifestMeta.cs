@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+
 using UEManifestReader.Enums;
 
 namespace UEManifestReader.Objects
@@ -56,9 +57,7 @@ namespace UEManifestReader.Objects
                 default)
         {
             if (includeBuildId)
-            {
                 BuildId = reader.ReadFString();
-            }
         }
 
         /// <summary>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+
 using UEManifestReader.Exceptions;
 
 namespace UEManifestReader
@@ -10,15 +11,11 @@ namespace UEManifestReader
         internal static T[] ReadArray<T>(this Stream _, int count, Func<T> readAs)
         {
             if (count == 0)
-            {
                 return Array.Empty<T>();
-            }
 
             var buffer = new T[count];
             for (var i = 0; i < count; i++)
-            {
                 buffer[i] = readAs();
-            }
 
             return buffer;
         }
@@ -41,9 +38,7 @@ namespace UEManifestReader
             if (bLoadUnicodeChar)
             {
                 if (saveNum == int.MinValue)
-                {
                     throw new UEManifestReaderException(null, new FStringInvalidException("Archive is corrupted!"));
-                }
 
                 saveNum = -saveNum;
             }
@@ -52,10 +47,8 @@ namespace UEManifestReader
             {
                 case 0:
                     return string.Empty;
-
                 case 1 when stream.ReadByte() != 0:
                     throw new UEManifestReaderException(null, new FStringInvalidException("FString is not null terminated!"));
-
                 case 1:
                     return string.Empty;
             }
@@ -64,23 +57,17 @@ namespace UEManifestReader
             {
                 var chars = new char[saveNum];
                 for (var i = 0; i < saveNum; i++)
-                {
                     chars[i] = stream.ReadChar();
-                }
 
                 if (chars[^1] != '\0')
-                {
                     throw new UEManifestReaderException(null, new FStringInvalidException("FString is not null terminated!"));
-                }
 
-                return new string(chars, 0, chars.Length - 1);
+                return new(chars, 0, chars.Length - 1);
             }
 
             byte[] buffer = stream.ReadBytes(saveNum);
             if (buffer[^1] != '\0')
-            {
                 throw new UEManifestReaderException(null, new FStringInvalidException("FString is not null terminated!"));
-            }
 
             return Encoding.ASCII.GetString(buffer, 0, buffer.Length - 1);
         }
@@ -106,9 +93,7 @@ namespace UEManifestReader
         {
             byte* byteAlloc = stackalloc byte[sizeof(T)];
             for (var i = 0; i < sizeof(T); i++)
-            {
                 byteAlloc[i] = (byte)stream.ReadByte();
-            }
 
             return Utilities.ReinterpretCast<T>((IntPtr)byteAlloc);
         }
