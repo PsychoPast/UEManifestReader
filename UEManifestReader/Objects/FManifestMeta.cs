@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
 using UEManifestReader.Enums;
 
 namespace UEManifestReader.Objects
@@ -42,8 +41,7 @@ namespace UEManifestReader.Objects
         }
 
         internal FManifestMeta(Stream reader, bool includeBuildId)
-            : this(
-                reader.ReadInt(),
+            : this(reader.ReadInt(),
                 reader.ReadBool(),
                 reader.ReadUInt(),
                 reader.ReadFString(),

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-
 using UEManifestReader.Exceptions;
 
 namespace UEManifestReader
@@ -48,7 +47,8 @@ namespace UEManifestReader
                 case 0:
                     return string.Empty;
                 case 1 when stream.ReadByte() != 0:
-                    throw new UEManifestReaderException(null, new FStringInvalidException("FString is not null terminated!"));
+                    throw new UEManifestReaderException(null,
+                        new FStringInvalidException("FString is not null terminated!"));
                 case 1:
                     return string.Empty;
             }
@@ -60,14 +60,16 @@ namespace UEManifestReader
                     chars[i] = stream.ReadChar();
 
                 if (chars[^1] != '\0')
-                    throw new UEManifestReaderException(null, new FStringInvalidException("FString is not null terminated!"));
+                    throw new UEManifestReaderException(null,
+                        new FStringInvalidException("FString is not null terminated!"));
 
-                return new(chars, 0, chars.Length - 1);
+                return new string(chars, 0, chars.Length - 1);
             }
 
             byte[] buffer = stream.ReadBytes(saveNum);
             if (buffer[^1] != '\0')
-                throw new UEManifestReaderException(null, new FStringInvalidException("FString is not null terminated!"));
+                throw new UEManifestReaderException(null,
+                    new FStringInvalidException("FString is not null terminated!"));
 
             return Encoding.ASCII.GetString(buffer, 0, buffer.Length - 1);
         }
@@ -76,7 +78,8 @@ namespace UEManifestReader
 
         internal static long ReadLong(this Stream stream) => UnsafeReadAs<long>(stream);
 
-        internal static T[] ReadTArray<T>(this Stream stream, Func<T> readAs) => ReadArray(stream, stream.ReadInt(), readAs);
+        internal static T[] ReadTArray<T>(this Stream stream, Func<T> readAs) =>
+            ReadArray(stream, stream.ReadInt(), readAs);
 
         internal static uint ReadUInt(this Stream stream) => UnsafeReadAs<uint>(stream);
 

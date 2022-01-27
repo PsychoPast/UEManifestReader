@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-
 using UEManifestReader.Enums;
 
 namespace UEManifestReader.Objects

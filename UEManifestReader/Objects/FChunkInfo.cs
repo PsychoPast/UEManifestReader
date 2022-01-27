@@ -62,7 +62,7 @@ namespace UEManifestReader.Objects
 
         public static bool operator !=(FChunkInfo left, FChunkInfo right) => left.Guid != right.Guid;
 
-        public override bool Equals(object obj) => obj is FChunkInfo fChunkInfo && (fChunkInfo == this);
+        public override bool Equals(object obj) => obj is FChunkInfo fChunkInfo && fChunkInfo == this;
 
         public override int GetHashCode() => HashCode.Combine(Guid, Hash);
 

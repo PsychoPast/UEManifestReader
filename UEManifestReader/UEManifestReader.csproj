@@ -14,16 +14,17 @@
 		<FileVersion>1.0.8</FileVersion>
 		<Description>Library to read and parse Unreal Engine 4 serialized manifests and deltas.</Description>
 		<Platforms>AnyCPU</Platforms>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-		<DocumentationFile>C:\Users\Christopher\Desktop\Visual Studio\UEManifestReader\UEManifestReader\UEManifestReader.xml</DocumentationFile>
+		<DocumentationFile></DocumentationFile>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-		<DocumentationFile>C:\Users\Christopher\Desktop\Visual Studio\UEManifestReader\UEManifestReader\UEManifestReader.xml</DocumentationFile>
+		<DocumentationFile></DocumentationFile>
 	</PropertyGroup>
 
 	<ItemGroup>

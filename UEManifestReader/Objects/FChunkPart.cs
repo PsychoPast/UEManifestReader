@@ -39,7 +39,7 @@ namespace UEManifestReader.Objects
 
         public static bool operator !=(FChunkPart left, FChunkPart right) => left.Guid != right.Guid;
 
-        public override bool Equals(object obj) => obj is FChunkPart fChunkPart && (fChunkPart == this);
+        public override bool Equals(object obj) => obj is FChunkPart fChunkPart && fChunkPart == this;
 
         public override int GetHashCode() => HashCode.Combine(Guid);
 

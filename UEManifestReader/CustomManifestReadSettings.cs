@@ -20,9 +20,8 @@ namespace UEManifestReader
             bool readFileMetaFlag = true,
             bool readFileInstallTags = true,
             bool readFChunksParts = true,
-            bool readCustomFields = true)
-            => SetFlags(
-                readManifestMeta,
+            bool readCustomFields = true) =>
+            SetFlags(readManifestMeta,
                 readChunksGuid,
                 readChunksHash,
                 readChunksShaHash,
@@ -37,9 +36,8 @@ namespace UEManifestReader
                 readFChunksParts,
                 readCustomFields);
 
-        public static CustomManifestReadSettings ReadOnlyWhatIsNecessaryForDownload
-            => new(
-                true,
+        public static CustomManifestReadSettings ReadOnlyWhatIsNecessaryForDownload =>
+            new(true,
                 true,
                 true,
                 false,
@@ -52,9 +50,9 @@ namespace UEManifestReader
                 false,
                 false);
 
-        public bool ReadChunkDataList
-            => ReadChunksGuid || ReadChunksHash || ReadChunksShaHash || ReadChunksGroupNumber || ReadChunksWindowSize
-            || ReadChunksDownloadSize;
+        public bool ReadChunkDataList =>
+            ReadChunksGuid || ReadChunksHash || ReadChunksShaHash || ReadChunksGroupNumber || ReadChunksWindowSize
+         || ReadChunksDownloadSize;
 
         public bool ReadChunksDownloadSize => CheckFlag(6);
 
@@ -72,8 +70,9 @@ namespace UEManifestReader
 
         public bool ReadFChunkPart => CheckFlag(12);
 
-        public bool ReadFFileManifestList
-            => ReadFileFileName || ReadFileSymLinkTarget || ReadFileHash || ReadFileMetaFlag || ReadFChunkPart || ReadFileInstallTags;
+        public bool ReadFFileManifestList =>
+            ReadFileFileName || ReadFileSymLinkTarget || ReadFileHash || ReadFileMetaFlag || ReadFChunkPart
+         || ReadFileInstallTags;
 
         public bool ReadFileFileName => CheckFlag(7);
 

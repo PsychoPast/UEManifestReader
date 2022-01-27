@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-
 using static UEManifestReader.Utilities;
 
 namespace UEManifestReader
@@ -23,7 +22,7 @@ namespace UEManifestReader
             _d = SwapBytesOrder(stream.ReadBytes(4));
         }
 
-        public override string ToString()
-            => $"{BytesToHexadecimalString(_a)}{BytesToHexadecimalString(_b)}{BytesToHexadecimalString(_c)}{BytesToHexadecimalString(_d)}";
+        public override string ToString() =>
+            $"{BytesToHexadecimalString(_a)}{BytesToHexadecimalString(_b)}{BytesToHexadecimalString(_c)}{BytesToHexadecimalString(_d)}";
     }
 }

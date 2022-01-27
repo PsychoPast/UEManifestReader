@@ -22,9 +22,7 @@ namespace UEManifestReader
             where TOutput : unmanaged
         {
             if (ptr == IntPtr.Zero)
-            {
                 throw new ArgumentNullException(nameof(ptr));
-            }
 
             return *(TOutput*)ptr;
         }
@@ -37,9 +35,7 @@ namespace UEManifestReader
             {
                 byte* cByte = pByte;
                 for (var i = 0; i < input.Length; i++)
-                {
                     buffer[lastIndex--] = *cByte++;
-                }
             }
 
             return buffer;
@@ -57,17 +53,15 @@ namespace UEManifestReader
             buffer[5] = (byte)(value >> 16);
             buffer[6] = (byte)(value >> 8);
             buffer[7] = (byte)value;
-
             if (!BitConverter.IsLittleEndian)
-            {
                 SwapBytesOrder(buffer);
-            }
 
             return BytesToHexadecimalString(buffer);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static char GetHexCharFromByte(byte rawByte) => (char)(rawByte > 9 ? rawByte - 10 + 'A' : rawByte + '0');
+        private static char GetHexCharFromByte(byte rawByte) =>
+            (char)(rawByte > 9 ? rawByte - 10 + 'A' : rawByte + '0');
 
         private static void ToHexadecimalString(int length, char* buffer, byte* pByte)
         {

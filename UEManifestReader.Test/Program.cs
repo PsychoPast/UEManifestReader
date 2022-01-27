@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
-
 using UEManifestReader.Enums;
 
 namespace UEManifestReader.Test
@@ -10,8 +9,7 @@ namespace UEManifestReader.Test
     {
         private static void Main(string[] args)
         {
-            UESerializedManifestReader x = new(
-                string.Empty,
+            UESerializedManifestReader x = new(string.Empty,
                 CustomManifestReadSettings.ReadOnlyWhatIsNecessaryForDownload,
                 true,
                 string.Empty,
@@ -28,7 +26,8 @@ namespace UEManifestReader.Test
             Console.WriteLine($"File Count: {x.Manifest.FileList.Count}");
             Console.WriteLine($"Chunks Count: {x.Manifest.ChunkList.Count}");
             Console.WriteLine($"App size {gameSize / 1.074e+9} GB");
-            Console.WriteLine($"Example URL: {x.Manifest.BaseUrls[0]}/{x.Manifest.ChunkSubdir}/{x.Manifest.ChunkList[0]}");
+            Console.WriteLine(
+                $"Example URL: {x.Manifest.BaseUrls[0]}/{x.Manifest.ChunkSubdir}/{x.Manifest.ChunkList[0]}");
         }
     }
 }
